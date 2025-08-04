@@ -1,16 +1,3 @@
-/*!
- * jQuery Minimal Build for Social Media App
- * Optimized version containing only required functionality
- * Original jQuery v3.3.1 | https://jquery.com/
- *
- * Features included:
- * - DOM selection and manipulation
- * - Event handling (click, submit)
- * - Class manipulation
- * - Basic animations (slideUp, slideToggle)
- * - Form handling
- * - Document ready
- */
 (function (global, factory) {
   "use strict";
   if (typeof module === "object" && typeof module.exports === "object") {
