@@ -8,6 +8,33 @@ from .models import Profile, Post, LikePost, Comment, Follow
 from django.contrib.auth.decorators import login_required
 import random
 
+#new home view
+@login_required(login_url='signin')
+def new_home(request):
+    # Get user profile
+    user_profile = Profile.objects.get(user=request.user)
+
+    # Get posts (excluding current user's posts)
+    posts = Post.objects.exclude(user=request.user).order_by('-created_at')
+    
+    # Get the list of post IDs that the current user has liked
+    liked_post_ids = LikePost.objects.filter(username=request.user).values_list('post_id', flat=True)
+    
+    # Get comments for each post
+    for post in posts:
+        post.post_comments = Comment.objects.filter(post_id=post).order_by('created_at')
+    
+    # Get suggested users (simple version)
+    followed_users = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
+    suggestions = User.objects.exclude(id=request.user.id).exclude(id__in=followed_users)[:5]
+    
+    return render(request, "index_simple.html", {
+        "user_profile": user_profile, 
+        "posts": posts, 
+        "liked_post_ids": liked_post_ids,
+        "suggestions": suggestions
+    })
+
 # Home view
 @login_required(login_url='signin')
 def home(request):
@@ -35,6 +62,7 @@ def home(request):
         "suggestions": suggestions
     })
 
+@login_required(login_url='signin')
 def signin(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -47,7 +75,7 @@ def signin(request):
         if user is not None:
             login(request, user)
             if Profile.objects.filter(user=user).exists():
-                return redirect('home')
+                return redirect('new_home')
             else:
                 return redirect('settings')
         else:
@@ -96,7 +124,7 @@ def upload(request):
         new_post = Post.objects.create(user=request.user, caption=caption, image=image)
         new_post.save()
         messages.success(request, "Post uploaded successfully!")
-        return redirect('home')
+        return redirect('new_home')
     return render(request, "upload.html")
 
 @login_required(login_url='signin')

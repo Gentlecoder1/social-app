@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Friends</title>
+    <title>new-home</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
@@ -141,18 +141,32 @@
           <button id="sidebarToggle" class="mr-2 md:hidden text-gray-600">
             <i class="fas fa-bars text-xl"></i>
           </button>
-          <h1 class="text-2xl font-bold text-blue-600 mr-4">Friends</h1>
-          <div class="relative hidden md:block">
-            <i
-              class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-            ></i>
-            <input
-              type="text"
-              placeholder="Search Friends"
-              class="search-input pl-10"
-            />
-          </div>
+          <h1 class="text-2xl font-bold text-blue-600 mr-4">Social Book</h1>
+
+          <!-- search bar -->
+          <form action="/search" method="POST">
+            {% csrf_token %}
+            <div class="relative hidden md:block">
+              <i
+                class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              ></i>
+              <input
+                type="text"
+                name="username"
+                placeholder="Search Friends"
+                class="search-input pl-10"
+              />
+              <button
+                type="submit"
+                class="bg-blue-500 hover:bg-blue-600 border-none text-white px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
+              >
+                <i class="fa fa-search fa-1x"></i>
+              </button>
+            </div>
+          </form>
         </div>
+
+        <!-- notification and profile -->
         <div class="flex items-center space-x-4">
           <button class="md:hidden text-gray-600">
             <i class="fas fa-search text-xl"></i>
@@ -167,30 +181,31 @@
               <span class="notification-badge">3</span>
             </button>
           </div>
+
           <!-- Profile Button -->
           <div class="relative">
-            <button
-              id="profileButton"
-              class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center"
-            >
-              <i class="fas fa-user text-gray-600"></i>
+            <button id="profileButton">
+              <img
+                src="{% if user.profile.profileimg and user.profile.profileimg.url %}{{ user.profile.profileimg.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center"
+              />
             </button>
             <div
               id="profileDropdown"
               class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden z-50"
             >
               <a
-                href="#"
+                href="{% url 'profile' user.username %}"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >Profile</a
               >
               <a
-                href="#"
+                href="{% url 'settings' %}"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >Settings</a
               >
               <a
-                href="#"
+                href="{% url 'logout' %}"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >Log out</a
               >
@@ -340,68 +355,111 @@
             <i class="fas fa-chevron-right text-gray-500"></i>
           </button>
 
-          <!-- Post Creator -->
+          <!-- Upload a post -->
           <div
             class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"
           >
-            <div class="p-4">
-              <div class="flex items-center">
-                <div
-                  class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
-                >
-                  <i class="fas fa-user text-gray-500"></i>
+            <form action="upload" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="p-4">
+                <div class="flex items-center">
+                  <div
+                    class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
+                  >
+                    <i class="fas fa-user text-gray-500"></i>
+                  </div>
+                  <textarea
+                    name="caption"
+                    id=""
+                    class="flex-1 bg-[#f0f2f5] rounded-full py-2 px-4 focus:outline-none text-[15px]"
+                    placeholder="What's on your mind?"
+                  ></textarea>
                 </div>
-                <input
-                  type="text"
-                  placeholder="What on your mind?"
-                  class="flex-1 bg-[#f0f2f5] rounded-full py-2 px-4 focus:outline-none text-[15px]"
-                />
               </div>
-            </div>
-            <div
-              class="border-t border-[#dadde1] p-2 flex justify-between px-4"
-            >
-              <button
-                class="flex items-center text-[#65676b] hover:bg-[#f0f2f5] px-2 py-1 rounded-md text-[15px]"
+              <div
+                class="border-t border-[#dadde1] p-2 flex justify-between px-4"
               >
-                <i class="fas fa-video text-[#f3425f] mr-2"></i> Live
-              </button>
-              <button
-                class="flex items-center text-[#65676b] hover:bg-[#f0f2f5] px-2 py-1 rounded-md text-[15px]"
-              >
-                <i class="fas fa-image text-[#45bd62] mr-2"></i> Photo
-              </button>
-              <button
-                class="flex items-center text-[#65676b] hover:bg-[#f0f2f5] px-2 py-1 rounded-md text-[15px]"
-              >
-                <i class="far fa-smile text-[#f7b928] mr-2"></i> Feeling
-              </button>
-            </div>
+                <!-- Upload picture -->
+                <div class="relative">
+                  <p
+                    data-type="photo"
+                    id="photo-toggle"
+                    class="photo-toggle flex items-center cursor-pointer text-[#65676b] hover:bg-[#f0f2f5] px-2 py-1 rounded-md text-[15px]"
+                  >
+                    <i class="fas fa-image text-[#45bd62] mr-2"></i> Photo
+                  </p>
+                  <input
+                    type="file"
+                    name="image_upload"
+                    id="photo-input"
+                    class="hidden absolute left-0 top-full mt-1 bg-white shadow-md p-2 border rounded-md"
+                  />
+                </div>
+
+                <!-- Upload video -->
+                <div class="relative">
+                  <p
+                    data-type="video"
+                    id="video-toggle"
+                    class="video-toggle flex items-center cursor-pointer text-[#65676b] hover:bg-[#f0f2f5] px-2 py-1 rounded-md text-[15px]"
+                  >
+                    <i class="fas fa-video text-[#f3425f] mr-2"></i> Video
+                  </p>
+                  <input
+                    type="file"
+                    name="video_upload"
+                    id="video-input"
+                    class="hidden absolute left-0 top-full mt-1 bg-white shadow-md p-2 border rounded-md"
+                  />
+                </div>
+
+                <button
+                  class="button bg-blue-700 px-4 py-2 rounded-2xl"
+                  type="submit"
+                >
+                  Upload
+                </button>
+              </div>
+            </form>
           </div>
 
-          <!-- Image Post with Real Photo -->
+          <!-- main feed section and Image Post with Real Photo -->
+          {% for post in posts %}
           <div
             class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"
           >
             <div class="p-4">
+              <!-- post header -->
               <div class="flex items-center mb-3">
                 <div
                   class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
                 >
-                  <i class="fas fa-user text-gray-500"></i>
+                  <a href="{% url 'profile' post.user.username %}">
+                    <div
+                      class="bg-gradient-to-tr from-yellow-600 to-pink-600 p-0.5 rounded-full"
+                    >
+                      <img
+                        src="{% if post.user.profile.profilepic and post.user.profile.profilepic.url %}{{ post.user.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                        alt="Profile Image"
+                        class="bg-gray-200 border border-white rounded-full w-8 h-8"
+                      />
+                    </div>
+                  </a>
                 </div>
                 <div>
-                  <h3 class="font-semibold text-[15px]">Nature Lover</h3>
-                  <p class="text-[#65676b] text-[13px]">Yesterday at 2:30 PM</p>
+                  <h3 class="font-semibold text-[15px]">
+                    <a
+                      href="{% url 'profile' post.user.username %}"
+                      class="post-username hover:text-blue-600"
+                      >{{ post.user.username }}</a
+                    >
+                  </h3>
                 </div>
               </div>
-              <p class="mb-3 text-[15px]">
-                Beautiful sunset at the beach yesterday! The colors were
-                absolutely breathtaking. 🌅
-              </p>
+              <p class="mb-3 text-[15px]">{{ post.caption }}</p>
               <img
-                src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                alt="Beach sunset"
+                src="{{ post.image.url }}"
+                alt="{{ post.caption }}"
                 class="post-image"
               />
             </div>
@@ -455,80 +513,7 @@
               </div>
             </div>
           </div>
-
-          <!-- Text Post -->
-          <div
-            class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"
-          >
-            <div class="p-4">
-              <div class="flex items-center mb-3">
-                <div
-                  class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
-                >
-                  <i class="fas fa-user text-gray-500"></i>
-                </div>
-                <div>
-                  <h3 class="font-semibold text-[15px]">John Carter</h3>
-                  <p class="text-[#65676b] text-[13px]">4 hours ago</p>
-                </div>
-              </div>
-              <p class="mb-3 text-[15px]">
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has been the industry's standard dummy
-                text ever since the 1500s, when an unknown printer took a galley
-                of type and scrambled it to make a type specimen book.
-              </p>
-            </div>
-            <div
-              class="border-t border-[#dadde1] px-4 py-2 flex justify-between text-[#65676b] text-[15px]"
-            >
-              <div class="flex items-center">
-                <div
-                  class="w-[18px] h-[18px] bg-[#1b74e4] rounded-full flex items-center justify-center text-white mr-1"
-                >
-                  <i class="fas fa-thumbs-up text-[10px]"></i>
-                </div>
-                <span>845</span>
-              </div>
-              <div>
-                <span class="mr-3">132 comments</span>
-                <span>28 shares</span>
-              </div>
-            </div>
-            <div
-              class="border-t border-[#dadde1] px-4 flex justify-between text-[15px]"
-            >
-              <button
-                class="post-interaction flex items-center justify-center w-1/3"
-              >
-                <i class="far fa-thumbs-up mr-2"></i> Like
-              </button>
-              <button
-                class="post-interaction flex items-center justify-center w-1/3"
-              >
-                <i class="far fa-comment mr-2"></i> Comment
-              </button>
-              <button
-                class="post-interaction flex items-center justify-center w-1/3"
-              >
-                <i class="fas fa-share mr-2"></i> Share
-              </button>
-            </div>
-            <div class="p-3 border-t border-[#dadde1]">
-              <div class="flex items-center">
-                <div
-                  class="w-[32px] h-[32px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
-                >
-                  <i class="fas fa-user text-gray-500 text-xs"></i>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Write your comment..."
-                  class="comment-input flex-1 py-2 px-4 focus:outline-none text-[15px]"
-                />
-              </div>
-            </div>
-          </div>
+          {% endfor %}
         </div>
       </div>
 
@@ -686,6 +671,29 @@
         const closeSidebar = document.getElementById("closeSidebar");
         const sidebarOverlay = document.getElementById("sidebarOverlay");
         let sidebarOpen = false;
+
+        // upload media dropdown
+        // Function to toggle file input visibility
+        function setupToggle(pId, inputId) {
+          const toggle = document.getElementById(pId);
+          const input = document.getElementById(inputId);
+
+          toggle.addEventListener("click", (e) => {
+            e.stopPropagation(); // Prevent global click from hiding it immediately
+            input.classList.toggle("hidden");
+          });
+        }
+
+        // Set up toggles for photo and video
+        setupToggle("photo-toggle", "photo-input");
+        setupToggle("video-toggle", "video-input");
+
+        // Close all inputs when clicking outside
+        document.addEventListener("click", () => {
+          document.querySelectorAll('input[type="file"]').forEach((input) => {
+            input.classList.add("hidden");
+          });
+        });
 
         // Toggle profile dropdown
         profileButton.addEventListener("click", function (e) {
