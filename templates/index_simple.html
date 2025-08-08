@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Friends</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: Segoe UI, system-ui, sans-serif;
+        background-color: #f0f2f5;
+      }
+      .sidebar-item {
+        padding: 8px;
+        margin: 2px 0;
+        border-radius: 6px;
+      }
+      .sidebar-item:hover {
+        background-color: #e4e6e9;
+      }
+      .active-dot {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 10px;
+        height: 10px;
+        background-color: #31a24c;
+        border-radius: 50%;
+        border: 2px solid white;
+      }
+      .post-interaction {
+        color: #65676b;
+        font-size: 15px;
+        font-weight: 500;
+        padding: 8px 0;
+      }
+      .post-interaction:hover {
+        background-color: #f0f2f5;
+        border-radius: 4px;
+      }
+      .comment-input {
+        background-color: #f0f2f5;
+        border-radius: 18px;
+        font-size: 15px;
+      }
+      #rightSidebar {
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      }
+      #rightSidebar.show {
+        transform: translateX(0);
+      }
+      #rightSidebarOverlay {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s;
+      }
+      #rightSidebarOverlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+      .post-image {
+        width: 100%;
+        border-radius: 8px;
+        margin-top: 12px;
+        max-height: 500px;
+        object-fit: cover;
+      }
+      .search-input {
+        background-color: #f0f2f5;
+        border-radius: 50px;
+        padding: 8px 16px;
+        width: 240px;
+      }
+      .search-input:focus {
+        outline: none;
+        background-color: white;
+        box-shadow: 0 0 0 2px #e7f3ff;
+      }
+      .notification-badge {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 16px;
+        height: 16px;
+        background-color: #f3425f;
+        border-radius: 50%;
+        border: 2px solid white;
+        color: white;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      #sidebar.show {
+        transform: translateX(0);
+      }
+      #sidebarOverlay {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s;
+      }
+      #sidebarOverlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+      @media (min-width: 768px) {
+        #sidebar {
+          transform: translateX(0);
+        }
+        #rightSidebar {
+          width: 360px;
+        }
+      }
+      @media (max-width: 767px) {
+        #rightSidebar {
+          width: 100%;
+        }
+        .notification-icon {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body class="flex flex-col">
+    <!-- Main Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-30">
+      <div
+        class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between"
+      >
+        <div class="flex items-center">
+          <!-- Hamburger menu for mobile -->
+          <button id="sidebarToggle" class="mr-2 md:hidden text-gray-600">
+            <i class="fas fa-bars text-xl"></i>
+          </button>
+          <h1 class="text-2xl font-bold text-blue-600 mr-4">Friends</h1>
+          <div class="relative hidden md:block">
+            <i
+              class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            ></i>
+            <input
+              type="text"
+              placeholder="Search Friends"
+              class="search-input pl-10"
+            />
+          </div>
+        </div>
+        <div class="flex items-center space-x-4">
+          <button class="md:hidden text-gray-600">
+            <i class="fas fa-search text-xl"></i>
+          </button>
+          <!-- Notification Button - Hidden on mobile -->
+          <div class="relative hidden md:block">
+            <button
+              id="headerNotificationToggle"
+              class="text-gray-600 hover:text-blue-500 p-2 rounded-full relative"
+            >
+              <i class="fas fa-bell text-xl"></i>
+              <span class="notification-badge">3</span>
+            </button>
+          </div>
+          <!-- Profile Button -->
+          <div class="relative">
+            <button
+              id="profileButton"
+              class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center"
+            >
+              <i class="fas fa-user text-gray-600"></i>
+            </button>
+            <div
+              id="profileDropdown"
+              class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden z-50"
+            >
+              <a
+                href="#"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >Profile</a
+              >
+              <a
+                href="#"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >Settings</a
+              >
+              <a
+                href="#"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >Log out</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Overlay for left sidebar (mobile) -->
+    <div
+      id="sidebarOverlay"
+      class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden"
+    ></div>
+
+    <div class="flex flex-1">
+      <!-- Left Sidebar -->
+      <div
+        id="sidebar"
+        class="w-[280px] bg-white h-screen fixed z-20 overflow-y-auto"
+      >
+        <div class="p-4">
+          <div class="flex justify-between items-center mb-6">
+            <h1 class="text-[24px] font-bold text-black">Friends.</h1>
+            <button
+              id="closeSidebar"
+              class="md:hidden text-gray-500 hover:bg-gray-100 p-2 rounded-full"
+            >
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+
+          <div class="mb-6">
+            <h2 class="text-[17px] font-semibold text-[#65676b] mb-2 pl-2">
+              Home
+            </h2>
+            <ul>
+              <li
+                class="sidebar-item flex items-center cursor-pointer font-medium bg-[#f0f2f5]"
+              >
+                <i
+                  class="fas fa-user-friends w-[36px] text-[20px] text-[#1b74e4]"
+                ></i>
+                <span>Friends</span>
+              </li>
+              <li class="sidebar-item flex items-center cursor-pointer">
+                <i class="fas fa-users w-[36px] text-[20px] text-[#1b74e4]"></i>
+                <span>Groups</span>
+              </li>
+              <li class="sidebar-item flex items-center cursor-pointer">
+                <i class="fas fa-store w-[36px] text-[20px] text-[#1b74e4]"></i>
+                <span>Marketplace</span>
+              </li>
+              <li class="sidebar-item flex items-center cursor-pointer">
+                <i
+                  class="fas fa-bookmark w-[36px] text-[20px] text-[#1b74e4]"
+                ></i>
+                <span>Saved</span>
+              </li>
+              <li class="sidebar-item flex items-center cursor-pointer">
+                <i class="fas fa-flag w-[36px] text-[20px] text-[#1b74e4]"></i>
+                <span>Pages</span>
+              </li>
+              <li class="sidebar-item flex items-center cursor-pointer">
+                <i class="fas fa-star w-[36px] text-[20px] text-[#1b74e4]"></i>
+                <span>Favourites</span>
+              </li>
+            </ul>
+            <p
+              class="text-[#1877f2] mt-1 cursor-pointer hover:underline pl-[44px] text-[15px]"
+            >
+              See More
+            </p>
+          </div>
+
+          <div class="mb-6">
+            <h2 class="text-[17px] font-semibold text-[#65676b] mb-2 pl-2">
+              My Group
+            </h2>
+            <ul>
+              <li class="sidebar-item flex items-center cursor-pointer">
+                <div
+                  class="w-[36px] h-[36px] rounded-md bg-[#e4e6eb] flex items-center justify-center mr-2"
+                >
+                  <i class="fas fa-users text-[16px] text-[#1b74e4]"></i>
+                </div>
+                <span>The Nerd Head</span>
+              </li>
+              <li class="sidebar-item flex items-center cursor-pointer">
+                <div
+                  class="w-[36px] h-[36px] rounded-md bg-[#e4e6eb] flex items-center justify-center mr-2"
+                >
+                  <i class="fas fa-users text-[16px] text-[#1b74e4]"></i>
+                </div>
+                <span>Take a Trip</span>
+              </li>
+              <li class="sidebar-item flex items-center cursor-pointer">
+                <div
+                  class="w-[36px] h-[36px] rounded-md bg-[#e4e6eb] flex items-center justify-center mr-2"
+                >
+                  <i class="fas fa-users text-[16px] text-[#1b74e4]"></i>
+                </div>
+                <span>Papa Ki Pari</span>
+              </li>
+              <li class="sidebar-item flex items-center cursor-pointer">
+                <div
+                  class="w-[36px] h-[36px] rounded-md bg-[#e4e6eb] flex items-center justify-center mr-2"
+                >
+                  <i class="fas fa-users text-[16px] text-[#1b74e4]"></i>
+                </div>
+                <span>College Friends</span>
+              </li>
+              <li class="sidebar-item flex items-center cursor-pointer">
+                <div
+                  class="w-[36px] h-[36px] rounded-md bg-[#e4e6eb] flex items-center justify-center mr-2"
+                >
+                  <i class="fas fa-users text-[16px] text-[#1b74e4]"></i>
+                </div>
+                <span>My Dream House</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overlay for right sidebar -->
+      <div
+        id="rightSidebarOverlay"
+        class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden"
+      ></div>
+
+      <!-- Main Content -->
+      <div class="flex-1 md:ml-[280px] pt-4">
+        <div class="max-w-[680px] mx-auto p-4">
+          <!-- Notification button for mobile -->
+          <button
+            id="mobileNotificationToggle"
+            class="md:hidden w-full bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4 p-3 flex items-center justify-between"
+          >
+            <div class="flex items-center">
+              <div class="relative mr-3">
+                <i class="fas fa-bell text-xl text-gray-600"></i>
+                <span class="notification-badge">3</span>
+              </div>
+              <span class="font-medium">Notifications</span>
+            </div>
+            <i class="fas fa-chevron-right text-gray-500"></i>
+          </button>
+
+          <!-- Post Creator -->
+          <div
+            class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"
+          >
+            <div class="p-4">
+              <div class="flex items-center">
+                <div
+                  class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
+                >
+                  <i class="fas fa-user text-gray-500"></i>
+                </div>
+                <input
+                  type="text"
+                  placeholder="What on your mind?"
+                  class="flex-1 bg-[#f0f2f5] rounded-full py-2 px-4 focus:outline-none text-[15px]"
+                />
+              </div>
+            </div>
+            <div
+              class="border-t border-[#dadde1] p-2 flex justify-between px-4"
+            >
+              <button
+                class="flex items-center text-[#65676b] hover:bg-[#f0f2f5] px-2 py-1 rounded-md text-[15px]"
+              >
+                <i class="fas fa-video text-[#f3425f] mr-2"></i> Live
+              </button>
+              <button
+                class="flex items-center text-[#65676b] hover:bg-[#f0f2f5] px-2 py-1 rounded-md text-[15px]"
+              >
+                <i class="fas fa-image text-[#45bd62] mr-2"></i> Photo
+              </button>
+              <button
+                class="flex items-center text-[#65676b] hover:bg-[#f0f2f5] px-2 py-1 rounded-md text-[15px]"
+              >
+                <i class="far fa-smile text-[#f7b928] mr-2"></i> Feeling
+              </button>
+            </div>
+          </div>
+
+          <!-- Image Post with Real Photo -->
+          <div
+            class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"
+          >
+            <div class="p-4">
+              <div class="flex items-center mb-3">
+                <div
+                  class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
+                >
+                  <i class="fas fa-user text-gray-500"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-[15px]">Nature Lover</h3>
+                  <p class="text-[#65676b] text-[13px]">Yesterday at 2:30 PM</p>
+                </div>
+              </div>
+              <p class="mb-3 text-[15px]">
+                Beautiful sunset at the beach yesterday! The colors were
+                absolutely breathtaking. 🌅
+              </p>
+              <img
+                src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+                alt="Beach sunset"
+                class="post-image"
+              />
+            </div>
+            <div
+              class="border-t border-[#dadde1] px-4 py-2 flex justify-between text-[#65676b] text-[15px]"
+            >
+              <div class="flex items-center">
+                <div
+                  class="w-[18px] h-[18px] bg-[#1b74e4] rounded-full flex items-center justify-center text-white mr-1"
+                >
+                  <i class="fas fa-thumbs-up text-[10px]"></i>
+                </div>
+                <span>1.2k</span>
+              </div>
+              <div>
+                <span class="mr-3">243 comments</span>
+                <span>56 shares</span>
+              </div>
+            </div>
+            <div
+              class="border-t border-[#dadde1] px-4 flex justify-between text-[15px]"
+            >
+              <button
+                class="post-interaction flex items-center justify-center w-1/3"
+              >
+                <i class="far fa-thumbs-up mr-2"></i> Like
+              </button>
+              <button
+                class="post-interaction flex items-center justify-center w-1/3"
+              >
+                <i class="far fa-comment mr-2"></i> Comment
+              </button>
+              <button
+                class="post-interaction flex items-center justify-center w-1/3"
+              >
+                <i class="fas fa-share mr-2"></i> Share
+              </button>
+            </div>
+            <div class="p-3 border-t border-[#dadde1]">
+              <div class="flex items-center">
+                <div
+                  class="w-[32px] h-[32px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
+                >
+                  <i class="fas fa-user text-gray-500 text-xs"></i>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Write your comment..."
+                  class="comment-input flex-1 py-2 px-4 focus:outline-none text-[15px]"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Text Post -->
+          <div
+            class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"
+          >
+            <div class="p-4">
+              <div class="flex items-center mb-3">
+                <div
+                  class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
+                >
+                  <i class="fas fa-user text-gray-500"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-[15px]">John Carter</h3>
+                  <p class="text-[#65676b] text-[13px]">4 hours ago</p>
+                </div>
+              </div>
+              <p class="mb-3 text-[15px]">
+                Lorem Ipsum is simply dummy text of the printing and typesetting
+                industry. Lorem Ipsum has been the industry's standard dummy
+                text ever since the 1500s, when an unknown printer took a galley
+                of type and scrambled it to make a type specimen book.
+              </p>
+            </div>
+            <div
+              class="border-t border-[#dadde1] px-4 py-2 flex justify-between text-[#65676b] text-[15px]"
+            >
+              <div class="flex items-center">
+                <div
+                  class="w-[18px] h-[18px] bg-[#1b74e4] rounded-full flex items-center justify-center text-white mr-1"
+                >
+                  <i class="fas fa-thumbs-up text-[10px]"></i>
+                </div>
+                <span>845</span>
+              </div>
+              <div>
+                <span class="mr-3">132 comments</span>
+                <span>28 shares</span>
+              </div>
+            </div>
+            <div
+              class="border-t border-[#dadde1] px-4 flex justify-between text-[15px]"
+            >
+              <button
+                class="post-interaction flex items-center justify-center w-1/3"
+              >
+                <i class="far fa-thumbs-up mr-2"></i> Like
+              </button>
+              <button
+                class="post-interaction flex items-center justify-center w-1/3"
+              >
+                <i class="far fa-comment mr-2"></i> Comment
+              </button>
+              <button
+                class="post-interaction flex items-center justify-center w-1/3"
+              >
+                <i class="fas fa-share mr-2"></i> Share
+              </button>
+            </div>
+            <div class="p-3 border-t border-[#dadde1]">
+              <div class="flex items-center">
+                <div
+                  class="w-[32px] h-[32px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
+                >
+                  <i class="fas fa-user text-gray-500 text-xs"></i>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Write your comment..."
+                  class="comment-input flex-1 py-2 px-4 focus:outline-none text-[15px]"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar (Notifications) -->
+      <div
+        id="rightSidebar"
+        class="fixed top-0 right-0 bg-white h-screen z-40 overflow-y-auto p-4"
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-semibold text-[20px]">Notifications</h3>
+          <button
+            id="closeRightSidebar"
+            class="text-gray-500 hover:bg-gray-100 p-2 rounded-full"
+          >
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Birthdays -->
+        <div class="mb-6">
+          <h3 class="font-semibold mb-3 text-[17px] text-[#65676b]">
+            Birthdays
+          </h3>
+          <div class="flex items-center">
+            <div
+              class="w-[40px] h-[40px] rounded-full bg-[#e4e6eb] flex items-center justify-center mr-3"
+            >
+              <i class="fas fa-birthday-cake text-[#f3425f]"></i>
+            </div>
+            <p class="text-[15px]">
+              Pola Foster and 3 other friends have birthday today
+            </p>
+          </div>
+        </div>
+
+        <!-- Latest Activity -->
+        <div class="mb-6">
+          <h3 class="font-semibold mb-3 text-[17px] text-[#65676b]">
+            Latest Activity
+          </h3>
+          <div class="flex items-start mb-3">
+            <div
+              class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
+            >
+              <i class="fas fa-user text-gray-500"></i>
+            </div>
+            <div>
+              <p class="text-[15px]">
+                Halfly Harald Gomes added a photo in Talk.js
+              </p>
+              <p class="text-[#65676b] text-[13px]">about an hour ago</p>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div
+              class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
+            >
+              <i class="fas fa-user text-gray-500"></i>
+            </div>
+            <div>
+              <p class="text-[15px]">Alex kai sent you a friend request</p>
+              <p class="text-[#65676b] text-[13px]">3 hours ago</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Friends -->
+        <div>
+          <h3 class="font-semibold mb-3 text-[17px] text-[#65676b]">
+            Active Friends
+          </h3>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="text-center">
+              <div
+                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
+              >
+                <i class="fas fa-user text-gray-500 text-[40px]"></i>
+                <div class="active-dot"></div>
+              </div>
+              <p class="text-[13px]">Jaden Chance</p>
+            </div>
+            <div class="text-center">
+              <div
+                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
+              >
+                <i class="fas fa-user text-gray-500 text-[40px]"></i>
+                <div class="active-dot"></div>
+              </div>
+              <p class="text-[13px]">Arezki Williams</p>
+            </div>
+            <div class="text-center">
+              <div
+                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
+              >
+                <i class="fas fa-user text-gray-500 text-[40px]"></i>
+                <div class="active-dot"></div>
+              </div>
+              <p class="text-[13px]">Rose James</p>
+            </div>
+            <div class="text-center">
+              <div
+                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
+              >
+                <i class="fas fa-user text-gray-500 text-[40px]"></i>
+                <div class="active-dot"></div>
+              </div>
+              <p class="text-[13px]">Tman Mats</p>
+            </div>
+            <div class="text-center">
+              <div
+                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
+              >
+                <i class="fas fa-user text-gray-500 text-[40px]"></i>
+                <div class="active-dot"></div>
+              </div>
+              <p class="text-[13px]">Alex Andrew</p>
+            </div>
+            <div class="text-center">
+              <div
+                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
+              >
+                <i class="fas fa-user text-gray-500 text-[40px]"></i>
+                <div class="active-dot"></div>
+              </div>
+              <p class="text-[13px]">Kaixi Cark</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Profile dropdown functionality
+        const profileButton = document.getElementById("profileButton");
+        const profileDropdown = document.getElementById("profileDropdown");
+
+        // Notification sidebar functionality
+        const rightSidebar = document.getElementById("rightSidebar");
+        const headerNotificationToggle = document.getElementById(
+          "headerNotificationToggle"
+        );
+        const mobileNotificationToggle = document.getElementById(
+          "mobileNotificationToggle"
+        );
+        const closeRightSidebar = document.getElementById("closeRightSidebar");
+        const rightSidebarOverlay = document.getElementById(
+          "rightSidebarOverlay"
+        );
+        let rightSidebarOpen = false;
+
+        // Left sidebar functionality
+        const sidebar = document.getElementById("sidebar");
+        const sidebarToggle = document.getElementById("sidebarToggle");
+        const closeSidebar = document.getElementById("closeSidebar");
+        const sidebarOverlay = document.getElementById("sidebarOverlay");
+        let sidebarOpen = false;
+
+        // Toggle profile dropdown
+        profileButton.addEventListener("click", function (e) {
+          e.stopPropagation();
+          profileDropdown.classList.toggle("hidden");
+        });
+
+        // Toggle right sidebar (notifications)
+        function toggleRightSidebar() {
+          rightSidebarOpen = !rightSidebarOpen;
+          if (rightSidebarOpen) {
+            rightSidebar.classList.add("show");
+            rightSidebarOverlay.classList.add("show");
+            rightSidebarOverlay.classList.remove("hidden");
+          } else {
+            rightSidebar.classList.remove("show");
+            rightSidebarOverlay.classList.remove("show");
+            rightSidebarOverlay.classList.add("hidden");
+          }
+        }
+
+        // Toggle left sidebar
+        function toggleSidebar() {
+          sidebarOpen = !sidebarOpen;
+          if (sidebarOpen) {
+            sidebar.classList.add("show");
+            sidebarOverlay.classList.add("show");
+            sidebarOverlay.classList.remove("hidden");
+          } else {
+            sidebar.classList.remove("show");
+            sidebarOverlay.classList.remove("show");
+            sidebarOverlay.classList.add("hidden");
+          }
+        }
+
+        // Desktop notification toggle
+        if (headerNotificationToggle) {
+          headerNotificationToggle.addEventListener("click", function (e) {
+            e.stopPropagation();
+            toggleRightSidebar();
+          });
+        }
+
+        // Mobile notification toggle
+        if (mobileNotificationToggle) {
+          mobileNotificationToggle.addEventListener("click", function (e) {
+            e.stopPropagation();
+            toggleRightSidebar();
+          });
+        }
+
+        closeRightSidebar.addEventListener("click", function (e) {
+          e.stopPropagation();
+          toggleRightSidebar();
+        });
+
+        rightSidebarOverlay.addEventListener("click", function (e) {
+          e.stopPropagation();
+          toggleRightSidebar();
+        });
+
+        sidebarToggle.addEventListener("click", function (e) {
+          e.stopPropagation();
+          toggleSidebar();
+        });
+
+        closeSidebar.addEventListener("click", function (e) {
+          e.stopPropagation();
+          toggleSidebar();
+        });
+
+        sidebarOverlay.addEventListener("click", function (e) {
+          e.stopPropagation();
+          toggleSidebar();
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function () {
+          profileDropdown.classList.add("hidden");
+        });
+
+        // Prevent clicks inside dropdown from closing it
+        profileDropdown.addEventListener("click", function (e) {
+          e.stopPropagation();
+        });
+
+        // On mobile, show notifications sidebar by default
+        if (window.innerWidth < 768) {
+          toggleRightSidebar();
+        }
+      });
+    </script>
+  </body>
+</html>
