@@ -62,7 +62,6 @@ def home(request):
         "suggestions": suggestions
     })
 
-@login_required(login_url='signin')
 def signin(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -226,6 +225,7 @@ def comment(request):
                 "comment": new_comment.comment,
                 "created_at": new_comment.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                 "profile_pic": user_profile.profilepic.url if user_profile.profilepic else "/media/profile_pics/blank-profile-picture.png"
+                
             }
         }
         return JsonResponse(comment_data)

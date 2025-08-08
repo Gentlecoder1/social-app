@@ -20,6 +20,7 @@ class Post(models.Model):
     image = models.ImageField(upload_to='post_images/')
     created_at = models.DateTimeField(auto_now_add=True)
     no_of_likes = models.IntegerField(default=0)
+    no_of_comments = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.user.id)

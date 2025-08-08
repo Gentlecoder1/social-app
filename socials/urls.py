@@ -15,6 +15,6 @@ urlpatterns = [
     path("settings", views.settings, name="settings"),
     path("search", views.search, name="search"),
     path("debug/users", views.debug_users, name="debug_users"),
-    path("comment", views.comment, name="comment"),
+    path("comment/", views.comment, name="comment"),
     path("follow", views.follow, name="follow"),
 ]
