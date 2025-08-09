@@ -296,7 +296,7 @@
                   {% csrf_token %}
                   <p class="my-3 leading-6">Upload pics</p>
                   <div>
-                    <input type="file" name="image_upload" />
+                    <input type="file" name="image_upload" accept="image/*,video/*" />
                     <textarea
                       class="button soft-warning small"
                       name="caption"
@@ -566,9 +566,19 @@
             </div>
 
             <div uk-lightbox>
-              <a href="{{ post.image.url }}">
-                <img src="{{ post.image.url }}" alt="Post Image" />
-              </a>
+              {% if post.media and post.media_type == 'video' %}
+                <video src="{{ post.media.url }}" controls style="width: 100%;">
+                  Your browser does not support the video tag.
+                </video>
+              {% elif post.media %}
+                <a href="{{ post.media.url }}">
+                  <img src="{{ post.media.url }}" alt="Post Media" />
+                </a>
+              {% else %}
+                <div style="background-color: #f0f2f5; padding: 20px; text-align: center; border-radius: 8px;">
+                  <p style="color: #65676b;">No media available</p>
+                </div>
+              {% endif %}
             </div>
 
             <div class="py-3 px-4 space-y-2">
@@ -647,11 +657,15 @@
                 </button>
 
                 <!-- download icon -->
+                {% if post.media %}
                 <a
-                  href="{{ post.image.url }}"
+                  href="{{ post.media.url }}"
                   class="flex items-center space-x-2 flex-1 justify-end action-btn hover:text-primary transition-colors"
                   download
                 >
+                {% else %}
+                <span class="flex items-center space-x-2 flex-1 justify-end text-gray-400 cursor-not-allowed">
+                {% endif %}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -668,7 +682,11 @@
                       />
                     </g>
                   </svg>
+                {% if post.media %}
                 </a>
+                {% else %}
+                </span>
+                {% endif %}
                 .
               </div>
               <div class="flex space-x-4 lg:font-bold">

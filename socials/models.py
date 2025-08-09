@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 import uuid
+import os
 from datetime import datetime
 
 # Profile model linked to Django User
@@ -13,14 +16,43 @@ class Profile(models.Model):
     def __str__(self):
         return str(self.user.id)
 
+
+def validate_media_file(value):
+    """Validate that the uploaded file is an image or video"""
+    valid_image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+    valid_video_extensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv']
+    
+    ext = os.path.splitext(value.name)[1].lower()
+    if ext not in valid_image_extensions + valid_video_extensions:
+        raise ValidationError('Only image and video files are allowed.')
+
 class Post(models.Model):
+    MEDIA_TYPE_CHOICES = [
+        ('image', 'Image'),
+        ('video', 'Video'),
+    ]
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     caption = models.TextField()
-    image = models.ImageField(upload_to='post_images/')
+    media = models.FileField(upload_to='post_media/', validators=[validate_media_file])
+    media_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     no_of_likes = models.IntegerField(default=0)
-    no_of_comments = models.IntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        """Automatically determine media type based on file extension"""
+        if self.media:
+            ext = os.path.splitext(self.media.name)[1].lower()
+            image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+            video_extensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv']
+            
+            if ext in image_extensions:
+                self.media_type = 'image'
+            elif ext in video_extensions:
+                self.media_type = 'video'
+        
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return str(self.user.id)
@@ -36,7 +68,7 @@ class Comment(models.Model):
     post_id = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     username = models.ForeignKey(User, on_delete=models.CASCADE, related_name='commented_by')
     comment = models.TextField()
-    created_at = models.DateTimeField(default=datetime.now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.username} on {self.post_id}"

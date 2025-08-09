@@ -385,22 +385,42 @@
             {% for post in posts %}
             <div class="post-card group">
               <div class="relative overflow-hidden">
+                {% if post.media and post.media_type == 'video' %}
+                <video
+                  src="{{post.media.url}}"
+                  class="post-image"
+                  controls
+                  preload="metadata"
+                >
+                  Your browser does not support the video tag.
+                </video>
+                {% elif post.media %}
                 <img
-                  src="{{post.image.url}}"
+                  src="{{post.media.url}}"
                   alt="Post by {{user_profile.user.username}}"
                   class="post-image"
                 />
+                {% else %}
+                <div
+                  class="bg-gray-200 rounded-lg p-8 text-center text-gray-500 post-image"
+                >
+                  <i class="fas fa-image text-4xl mb-2"></i>
+                  <p>No media available</p>
+                </div>
+                {% endif %}
                 <div
                   class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center"
                 >
+                  {% if post.media %}
                   <a
-                    href="{{post.image.url}}"
+                    href="{{post.media.url}}"
                     target="_blank"
                     class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-full font-medium"
                   >
                     <i class="fas fa-expand-alt mr-2"></i>
                     View Full Size
                   </a>
+                  {% endif %}
                 </div>
               </div>
 
