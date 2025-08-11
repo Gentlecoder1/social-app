@@ -663,9 +663,7 @@
                   class="flex items-center space-x-2 flex-1 justify-end action-btn hover:text-primary transition-colors"
                   download
                 >
-                {% else %}
                 <span class="flex items-center space-x-2 flex-1 justify-end text-gray-400 cursor-not-allowed">
-                {% endif %}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -682,12 +680,9 @@
                       />
                     </g>
                   </svg>
-                {% if post.media %}
-                </a>
-                {% else %}
                 </span>
+                </a>
                 {% endif %}
-                .
               </div>
               <div class="flex space-x-4 lg:font-bold">
                 <div class="p-2 rounded-full">

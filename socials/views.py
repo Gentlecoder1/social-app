@@ -188,6 +188,7 @@ def like_post(request):
             post = Post.objects.get(id=post_id)
         except Post.DoesNotExist:
             return JsonResponse({"success": False, "error": "Post not found"}, status=404)
+            
         liked = LikePost.objects.filter(post_id=post, username=request.user).exists()
         if liked:
             LikePost.objects.filter(post_id=post, username=request.user).delete()
@@ -198,7 +199,9 @@ def like_post(request):
             post.no_of_likes += 1
             action = "liked"
         post.save()
+        
         return JsonResponse({"success": True, "no_of_likes": post.no_of_likes, "action": action})
+        
     return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
 
 @login_required(login_url='signin')

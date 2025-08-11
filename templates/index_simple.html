@@ -1,3 +1,4 @@
+{% load socials_extras %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -187,7 +188,7 @@
           <div class="relative">
             <button id="profileButton">
               <img
-                src="{% if user.profile.profileimg and user.profile.profileimg.url %}{{ user.profile.profileimg.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                src="{{ user.profile.profilepic.url }}"
                 class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center"
               />
             </button>
@@ -499,18 +500,28 @@
             <div
               class="border-t border-[#dadde1] px-4 py-2 flex justify-between text-[#65676b] text-[15px]"
             >
+              <!-- no of likes -->
               <div class="flex items-center">
                 <div
                   class="w-[18px] h-[18px] bg-[#1b74e4] rounded-full flex items-center justify-center text-white mr-1"
                 >
                   <i class="fas fa-thumbs-up text-[10px]"></i>
                 </div>
-                <span>1.2k</span>
+                <span class="like-count post-meta" data-post-id="{{ post.id }}"
+                  >{{ post.no_of_likes }}</span
+                >
               </div>
+              <!-- no of comments -->
               <div>
                 <span class="mr-3">243 comments</span>
-                <span>56 shares</span>
               </div>
+
+              <!-- download media -->
+              {% if post.media %}
+              <a href="{{ post.media.url }}" download
+                ><i class="fas fa-download text-[10px]"></i
+              ></a>
+              {% endif %}
             </div>
 
             <!-- engagement section -->
@@ -519,7 +530,11 @@
             >
               <!-- like button -->
               <button
-                class="post-interaction flex items-center justify-center w-1/3"
+                type="button"
+                class="post-interaction flex items-center justify-center w-1/3 like-btn transition-colors duration-200"
+                data-post-id="{{ post.id }}"
+                data-liked="{{ post.id|isin:liked_post_ids }}"
+                style="color: #65676b"
               >
                 <i class="far fa-thumbs-up mr-2"></i> Like
               </button>
@@ -680,64 +695,30 @@
         <!-- Active Friends -->
         <div>
           <h3 class="font-semibold mb-3 text-[17px] text-[#65676b]">
-            Active Friends
+            Friends You can follow
           </h3>
+          {% for suggestion in suggestions %}
           <div class="grid grid-cols-3 gap-3">
             <div class="text-center">
               <div
                 class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
               >
-                <i class="fas fa-user text-gray-500 text-[40px]"></i>
+                <a href="{% url 'profile' suggestion.username %}">
+                  <img
+                    src="{% if suggestion.profile.profilepic and suggestion.profile.profilepic.url %}{{ suggestion.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                    class="bg-gray-600 rounded-full w-30 h-30 object-cover hover:border-4 hover:border-blue-500"
+                  />
+                </a>
                 <div class="active-dot"></div>
               </div>
-              <p class="text-[13px]">Jaden Chance</p>
+              <p class="text-[23px]">{{ suggestion.username }}</p>
             </div>
-            <div class="text-center">
-              <div
-                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
-              >
-                <i class="fas fa-user text-gray-500 text-[40px]"></i>
-                <div class="active-dot"></div>
-              </div>
-              <p class="text-[13px]">Arezki Williams</p>
-            </div>
-            <div class="text-center">
-              <div
-                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
-              >
-                <i class="fas fa-user text-gray-500 text-[40px]"></i>
-                <div class="active-dot"></div>
-              </div>
-              <p class="text-[13px]">Rose James</p>
-            </div>
-            <div class="text-center">
-              <div
-                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
-              >
-                <i class="fas fa-user text-gray-500 text-[40px]"></i>
-                <div class="active-dot"></div>
-              </div>
-              <p class="text-[13px]">Tman Mats</p>
-            </div>
-            <div class="text-center">
-              <div
-                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
-              >
-                <i class="fas fa-user text-gray-500 text-[40px]"></i>
-                <div class="active-dot"></div>
-              </div>
-              <p class="text-[13px]">Alex Andrew</p>
-            </div>
-            <div class="text-center">
-              <div
-                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
-              >
-                <i class="fas fa-user text-gray-500 text-[40px]"></i>
-                <div class="active-dot"></div>
-              </div>
-              <p class="text-[13px]">Kaixi Cark</p>
+            {% empty %}
+            <div class="flex items-center justify-center py-6 text-secondary">
+              <p>No suggestions available</p>
             </div>
           </div>
+          {% endfor %}
         </div>
       </div>
     </div>
@@ -882,7 +863,57 @@
           toggleRightSidebar();
         }
 
-        // Optimized Comment System
+        // Like button functionality
+        document.querySelectorAll(".like-btn").forEach(function (button) {
+          // Set initial color based on data-liked attribute
+          const isLiked = button.getAttribute("data-liked") === "True";
+          button.style.color = isLiked ? "#5a7ad1" : "#65676b";
+
+          button.addEventListener("click", function () {
+            const postId = button.getAttribute("data-post-id");
+            const csrfToken = document.querySelector(
+              'input[name="csrfmiddlewaretoken"]'
+            ).value;
+            button.disabled = true;
+            button.style.opacity = "0.6";
+            fetch("{% url 'like_post' %}", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrfToken,
+              },
+              body: `post_id=${postId}`,
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  // Update like count
+                  const likeCountElement = document.querySelector(
+                    `.like-count[data-post-id="${postId}"]`
+                  );
+                  if (likeCountElement) {
+                    likeCountElement.textContent = data.no_of_likes;
+                  }
+                  // Update button color based on like status
+                  if (data.action === "liked") {
+                    button.style.color = "#5a7ad1"; // Blue when liked
+                    button.setAttribute("data-liked", "True");
+                  } else {
+                    button.style.color = "#65676b"; // Gray when not liked
+                    button.setAttribute("data-liked", "False");
+                  }
+                }
+                button.disabled = false;
+                button.style.opacity = "1";
+              })
+              .catch(() => {
+                button.disabled = false;
+                button.style.opacity = "1";
+              });
+          });
+        });
+
+        // Comment SECTION
         const CommentHandler = {
           cache: new Map(),
 
