@@ -35,33 +35,6 @@ def new_home(request):
         "suggestions": suggestions
     })
 
-# Home view
-@login_required(login_url='signin')
-def home(request):
-    # Get user profile
-    user_profile = Profile.objects.get(user=request.user)
-    
-    # Get posts (excluding current user's posts)
-    posts = Post.objects.exclude(user=request.user).order_by('-created_at')
-    
-    # Get the list of post IDs that the current user has liked
-    liked_post_ids = LikePost.objects.filter(username=request.user).values_list('post_id', flat=True)
-    
-    # Get comments for each post
-    for post in posts:
-        post.post_comments = Comment.objects.filter(post_id=post).order_by('created_at')
-    
-    # Get suggested users (simple version)
-    followed_users = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
-    suggestions = User.objects.exclude(id=request.user.id).exclude(id__in=followed_users)[:5]
-    
-    return render(request, "index.html", {
-        "user_profile": user_profile, 
-        "posts": posts, 
-        "liked_post_ids": liked_post_ids,
-        "suggestions": suggestions
-    })
-
 def signin(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -169,15 +142,19 @@ def profile(request, pk):
 def settings(request):
     user_profile, created = Profile.objects.get_or_create(user=request.user)
     if request.method == "POST":
+        works_at = request.POST.get("works_at")
+        occupation = request.POST.get("occupation")
         bio = request.POST.get("bio")
         location = request.POST.get("location")
         if request.FILES.get("image"):
             user_profile.profilepic = request.FILES["image"]
+        user_profile.works_at = works_at
+        user_profile.occupation = occupation
         user_profile.bio = bio
         user_profile.location = location
         user_profile.save()
         messages.success(request, "Profile updated successfully!")
-        return redirect('home')
+        return redirect('settings')
     return render(request, "setting.html", {"user_profile": user_profile})
 
 @login_required(login_url='signin')
@@ -250,7 +227,7 @@ def suggested_users(request):
     suggestions = list(potential_users[:5])
     random.shuffle(suggestions)  # Shuffle to randomize suggestions
 
-    return render(request, "home.html", {"suggestions": suggestions})
+    return render(request, "new_home.html", {"suggestions": suggestions})
 
 @login_required(login_url='signin')
 def search(request):

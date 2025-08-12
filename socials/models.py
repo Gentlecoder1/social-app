@@ -9,6 +9,8 @@ from datetime import datetime
 # Profile model linked to Django User
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    works_at = models.CharField(max_length=100, blank=True)
+    occupation = models.CharField(max_length=100, blank=True)
     bio = models.TextField(blank=True) 
     profilepic = models.ImageField(upload_to='profile_pics/', default='blank-profile-picture.png')
     location = models.CharField(max_length=100, blank=True)

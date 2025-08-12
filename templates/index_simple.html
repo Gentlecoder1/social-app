@@ -1,4 +1,4 @@
-{% load socials_extras %}
+{% load static %} {% load socials_extras %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>new-home</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{% static 'home.js' %}"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -361,7 +362,7 @@
           <div
             class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"
           >
-            <form action="upload" method="POST" enctype="multipart/form-data">
+            <form action="upload" method="POST">
               {% csrf_token %}
               <div class="p-4">
                 <div class="flex items-center">
@@ -391,6 +392,7 @@
                     data-type="photo"
                     id="photo-toggle"
                     class="photo-toggle flex items-center cursor-pointer text-[#65676b] hover:bg-[#f0f2f5] px-2 py-1 rounded-md text-[15px]"
+                    enctype="multipart/form-data"
                   >
                     <i class="fas fa-image text-[#45bd62] mr-2"></i> Photo
                   </p>
@@ -400,6 +402,7 @@
                     id="photo-input"
                     accept="image/*"
                     class="hidden absolute left-0 top-full mt-1 bg-white shadow-md p-2 border rounded-md"
+                    enctype="multipart/form-data"
                   />
                 </div>
 
@@ -439,36 +442,92 @@
             <!-- main post -->
             <div class="p-4">
               <!-- post header -->
-              <div class="flex items-center mb-3">
-                <div
-                  class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
-                >
-                  <a href="{% url 'profile' post.user.username %}">
-                    <div
-                      class="bg-gradient-to-tr from-yellow-600 to-pink-600 p-0.5 rounded-full"
-                    >
-                      <img
-                        src="{% if post.user.profile.profilepic and post.user.profile.profilepic.url %}{{ post.user.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
-                        alt="Profile Image"
-                        class="bg-gray-200 border border-white rounded-full w-8 h-8"
-                      />
-                    </div>
-                  </a>
-                </div>
-                <div>
-                  <h3 class="font-semibold text-[15px]">
-                    <a
-                      href="{% url 'profile' post.user.username %}"
-                      class="post-username hover:text-blue-600"
-                      >{{ post.user.username }}</a
-                    >
-                  </h3>
+              <div class="flex items-center mb-3 justify-between">
+                <span class="flex flex-row items-center">
+                  <div
+                    class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
+                  >
+                    <a href="{% url 'profile' post.user.username %}">
+                      <div
+                        class="bg-gradient-to-tr from-yellow-600 to-pink-600 p-0.5 rounded-full"
+                      >
+                        <img
+                          src="{% if post.user.profile.profilepic and post.user.profile.profilepic.url %}{{ post.user.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                          alt="Profile Image"
+                          class="bg-gray-200 border border-white rounded-full w-8 h-8"
+                        />
+                      </div>
+                    </a>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-[15px]">
+                      <a
+                        href="{% url 'profile' post.user.username %}"
+                        class="post-username hover:text-blue-600"
+                        >{{ post.user.username }}</a
+                      >
+                    </h3>
+                  </div>
+                </span>
+                <!-- dropdown menu -->
+                <div class="relative">
+                  <button
+                    class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-colors post-menu-btn"
+                    data-post-id="{{ post.id }}"
+                  >
+                    <i class="fas fa-ellipsis-h text-lg"></i>
+                  </button>
+                  <div
+                    class="absolute right-0 top-10 bg-white w-56 shadow-lg rounded-md text-gray-900 hidden text-base border border-gray-200 z-50 post-menu"
+                    data-post-id="{{ post.id }}"
+                  >
+                    <ul class="space-y-1 p-2">
+                      <li>
+                        <a
+                          href="#"
+                          class="flex items-center px-3 py-2 hover:bg-gray-100 hover:text-blue-600 rounded-md"
+                        >
+                          <i class="fas fa-edit mr-2"></i> Edit Caption
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="#"
+                          class="flex items-center px-3 py-2 hover:bg-gray-100 hover:text-blue-600 rounded-md"
+                        >
+                          <i class="fas fa-comment-slash mr-2"></i> Disable
+                          comments
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="#"
+                          class="flex items-center px-3 py-2 hover:bg-gray-100 hover:text-blue-600 rounded-md"
+                        >
+                          <i class="fas fa-heart mr-2"></i> Add to favorites
+                        </a>
+                      </li>
+                      <li>
+                        <hr class="my-2 border-gray-200" />
+                      </li>
+                      <li>
+                        <a
+                          href="#"
+                          class="flex items-center px-3 py-2 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-md"
+                        >
+                          <i class="fas fa-trash mr-2"></i> Delete Post
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
-              <p class="mb-3 text-[15px]">{{ post.caption }}</p>
+              <hr class="border-black" />
 
               <!-- Media display - either image or video -->
               {% if post.media and post.media_type == 'video' %}
+              <!-- Video post -->
+              <p class="mb-3 text-[15px]">{{ post.caption }}</p>
               <a href="{{ post.media.url }}" class="post-media-link">
                 <video
                   src="{{ post.media.url }}"
@@ -480,6 +539,8 @@
                 </video>
               </a>
               {% elif post.media %}
+              <!-- Image post -->
+              <p class="mb-3 text-[15px]">{{ post.caption }}</p>
               <a href="{{ post.media.url }}" class="post-media-link">
                 <img
                   src="{{ post.media.url }}"
@@ -488,10 +549,13 @@
                 />
               </a>
               {% else %}
-              <!-- Placeholder for posts without media -->
-              <div class="bg-gray-200 rounded-lg p-8 text-center text-gray-500">
-                <i class="fas fa-image text-4xl mb-2"></i>
-                <p>No media available</p>
+              <!-- Text-only post -->
+              <div
+                class="bg-gray-50 rounded-lg p-6 text-center border-l-4 border-blue-500"
+              >
+                <p class="text-[16px] text-gray-800 leading-relaxed">
+                  {{ post.caption }}
+                </p>
               </div>
               {% endif %}
             </div>
@@ -722,450 +786,5 @@
         </div>
       </div>
     </div>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // Profile dropdown functionality
-        const profileButton = document.getElementById("profileButton");
-        const profileDropdown = document.getElementById("profileDropdown");
-
-        // Notification sidebar functionality
-        const rightSidebar = document.getElementById("rightSidebar");
-        const headerNotificationToggle = document.getElementById(
-          "headerNotificationToggle"
-        );
-        const mobileNotificationToggle = document.getElementById(
-          "mobileNotificationToggle"
-        );
-        const closeRightSidebar = document.getElementById("closeRightSidebar");
-        const rightSidebarOverlay = document.getElementById(
-          "rightSidebarOverlay"
-        );
-        let rightSidebarOpen = false;
-
-        // Left sidebar functionality
-        const sidebar = document.getElementById("sidebar");
-        const sidebarToggle = document.getElementById("sidebarToggle");
-        const closeSidebar = document.getElementById("closeSidebar");
-        const sidebarOverlay = document.getElementById("sidebarOverlay");
-        let sidebarOpen = false;
-
-        // upload media dropdown
-        // Function to toggle file input visibility
-        function setupToggle(pId, inputId) {
-          const toggle = document.getElementById(pId);
-          const input = document.getElementById(inputId);
-
-          toggle.addEventListener("click", (e) => {
-            e.stopPropagation(); // Prevent global click from hiding it immediately
-            input.classList.toggle("hidden");
-          });
-        }
-
-        // Set up toggles for photo and video
-        setupToggle("photo-toggle", "photo-input");
-        setupToggle("video-toggle", "video-input");
-
-        // Close all inputs when clicking outside
-        document.addEventListener("click", () => {
-          document.querySelectorAll('input[type="file"]').forEach((input) => {
-            input.classList.add("hidden");
-          });
-        });
-
-        // Toggle profile dropdown
-        profileButton.addEventListener("click", function (e) {
-          e.stopPropagation();
-          profileDropdown.classList.toggle("hidden");
-        });
-
-        // Toggle right sidebar (notifications)
-        function toggleRightSidebar() {
-          rightSidebarOpen = !rightSidebarOpen;
-          if (rightSidebarOpen) {
-            rightSidebar.classList.add("show");
-            rightSidebarOverlay.classList.add("show");
-            rightSidebarOverlay.classList.remove("hidden");
-          } else {
-            rightSidebar.classList.remove("show");
-            rightSidebarOverlay.classList.remove("show");
-            rightSidebarOverlay.classList.add("hidden");
-          }
-        }
-
-        // Toggle left sidebar
-        function toggleSidebar() {
-          sidebarOpen = !sidebarOpen;
-          if (sidebarOpen) {
-            sidebar.classList.add("show");
-            sidebarOverlay.classList.add("show");
-            sidebarOverlay.classList.remove("hidden");
-          } else {
-            sidebar.classList.remove("show");
-            sidebarOverlay.classList.remove("show");
-            sidebarOverlay.classList.add("hidden");
-          }
-        }
-
-        // Desktop notification toggle
-        if (headerNotificationToggle) {
-          headerNotificationToggle.addEventListener("click", function (e) {
-            e.stopPropagation();
-            toggleRightSidebar();
-          });
-        }
-
-        // Mobile notification toggle
-        if (mobileNotificationToggle) {
-          mobileNotificationToggle.addEventListener("click", function (e) {
-            e.stopPropagation();
-            toggleRightSidebar();
-          });
-        }
-
-        closeRightSidebar.addEventListener("click", function (e) {
-          e.stopPropagation();
-          toggleRightSidebar();
-        });
-
-        rightSidebarOverlay.addEventListener("click", function (e) {
-          e.stopPropagation();
-          toggleRightSidebar();
-        });
-
-        sidebarToggle.addEventListener("click", function (e) {
-          e.stopPropagation();
-          toggleSidebar();
-        });
-
-        closeSidebar.addEventListener("click", function (e) {
-          e.stopPropagation();
-          toggleSidebar();
-        });
-
-        sidebarOverlay.addEventListener("click", function (e) {
-          e.stopPropagation();
-          toggleSidebar();
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener("click", function () {
-          profileDropdown.classList.add("hidden");
-        });
-
-        // Prevent clicks inside dropdown from closing it
-        profileDropdown.addEventListener("click", function (e) {
-          e.stopPropagation();
-        });
-
-        // On mobile, show notifications sidebar by default
-        if (window.innerWidth < 768) {
-          toggleRightSidebar();
-        }
-
-        // Like button functionality
-        document.querySelectorAll(".like-btn").forEach(function (button) {
-          // Set initial color based on data-liked attribute
-          const isLiked = button.getAttribute("data-liked") === "True";
-          button.style.color = isLiked ? "#5a7ad1" : "#65676b";
-
-          button.addEventListener("click", function () {
-            const postId = button.getAttribute("data-post-id");
-            const csrfToken = document.querySelector(
-              'input[name="csrfmiddlewaretoken"]'
-            ).value;
-            button.disabled = true;
-            button.style.opacity = "0.6";
-            fetch("{% url 'like_post' %}", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRFToken": csrfToken,
-              },
-              body: `post_id=${postId}`,
-            })
-              .then((response) => response.json())
-              .then((data) => {
-                if (data.success) {
-                  // Update like count
-                  const likeCountElement = document.querySelector(
-                    `.like-count[data-post-id="${postId}"]`
-                  );
-                  if (likeCountElement) {
-                    likeCountElement.textContent = data.no_of_likes;
-                  }
-                  // Update button color based on like status
-                  if (data.action === "liked") {
-                    button.style.color = "#5a7ad1"; // Blue when liked
-                    button.setAttribute("data-liked", "True");
-                  } else {
-                    button.style.color = "#65676b"; // Gray when not liked
-                    button.setAttribute("data-liked", "False");
-                  }
-                }
-                button.disabled = false;
-                button.style.opacity = "1";
-              })
-              .catch(() => {
-                button.disabled = false;
-                button.style.opacity = "1";
-              });
-          });
-        });
-
-        // Comment SECTION
-        const CommentHandler = {
-          cache: new Map(),
-
-          init() {
-            // Single event delegation for better performance
-            document.addEventListener("click", this.handleClick.bind(this));
-            document.addEventListener("submit", this.handleSubmit.bind(this));
-            document.addEventListener("scroll", this.handleScroll.bind(this), {
-              passive: true,
-              capture: true,
-            });
-          },
-
-          handleClick(e) {
-            const toggleBtn = e.target.closest(".comment-toggle-btn");
-            if (toggleBtn) {
-              e.preventDefault();
-              this.toggleComments(toggleBtn);
-            }
-          },
-
-          handleSubmit(e) {
-            if (e.target.matches(".comment-form")) {
-              e.preventDefault();
-              this.submitComment(e.target);
-            }
-          },
-
-          handleScroll(e) {
-            if (e.target.matches(".comments-scroll-container")) {
-              this.updateScrollFade(e.target);
-            }
-          },
-
-          getElements(postId) {
-            // Cache DOM queries
-            const cacheKey = `post-${postId}`;
-            if (this.cache.has(cacheKey)) {
-              return this.cache.get(cacheKey);
-            }
-
-            const elements = {
-              section: document.querySelector(
-                `[data-post-id="${postId}"].comments-section`
-              ),
-              container: document.querySelector(
-                `#comments-container-${postId}`
-              ),
-              button: document.querySelector(
-                `[data-post-id="${postId}"].comment-toggle-btn`
-              ),
-              form: document.querySelector(
-                `[data-post-id="${postId}"].comment-form`
-              ),
-            };
-
-            if (elements.section) {
-              elements.fadeOverlay = elements.section.querySelector(
-                ".comments-fade-overlay"
-              );
-              elements.scrollContainer = elements.section.querySelector(
-                ".comments-scroll-container"
-              );
-              elements.icon = elements.button?.querySelector(".comment-icon");
-            }
-
-            this.cache.set(cacheKey, elements);
-            return elements;
-          },
-
-          toggleComments(button) {
-            const postId = button.dataset.postId;
-            const elements = this.getElements(postId);
-
-            if (!elements.section) return;
-
-            const isHidden = elements.section.classList.contains("hidden");
-
-            if (isHidden) {
-              this.showComments(elements);
-            } else {
-              this.hideComments(elements);
-            }
-          },
-
-          showComments(elements) {
-            const { section, scrollContainer, fadeOverlay, icon } = elements;
-
-            section.classList.remove("hidden");
-
-            // Single RAF call
-            requestAnimationFrame(() => {
-              section.style.maxHeight = section.scrollHeight + "px";
-              section.style.opacity = "1";
-
-              if (icon) icon.style.color = "#1877f2";
-
-              // Check scroll after show
-              if (scrollContainer && fadeOverlay) {
-                setTimeout(() => this.updateScrollFade(scrollContainer), 100);
-              }
-            });
-          },
-
-          hideComments(elements) {
-            const { section, fadeOverlay, icon } = elements;
-
-            section.style.maxHeight = "0px";
-            section.style.opacity = "0";
-            fadeOverlay?.classList.remove("show-fade");
-
-            if (icon) icon.style.color = "#65676b";
-
-            setTimeout(() => section.classList.add("hidden"), 300);
-          },
-
-          updateScrollFade(container) {
-            const fadeOverlay = container.closest(".comments-fade-overlay");
-            if (!fadeOverlay) return;
-
-            const isScrollable =
-              container.scrollHeight > container.clientHeight;
-            const isNearBottom =
-              container.scrollTop + container.clientHeight >=
-              container.scrollHeight - 10;
-
-            fadeOverlay.classList.toggle(
-              "show-fade",
-              isScrollable && !isNearBottom
-            );
-          },
-
-          async submitComment(form) {
-            const postId = form.dataset.postId;
-            const elements = this.getElements(postId);
-            const input = form.querySelector(`#comment-${postId}`);
-            const button = form.querySelector('[type="submit"]');
-            const text = input?.value.trim();
-
-            if (!text) {
-              alert("Please enter a comment");
-              return;
-            }
-
-            // Loading state
-            if (button) {
-              button.disabled = true;
-              button.style.opacity = "0.6";
-            }
-
-            try {
-              const formData = new FormData(form);
-              // Get CSRF token
-              const csrfToken = document.querySelector(
-                "[name=csrfmiddlewaretoken]"
-              ).value;
-
-              const response = await fetch("/comment/", {
-                method: "POST",
-                body: formData,
-                headers: {
-                  "X-CSRFToken": csrfToken,
-                },
-              });
-
-              if (!response.ok) {
-                throw new Error(
-                  `HTTP ${response.status}: ${response.statusText}`
-                );
-              }
-
-              const data = await response.json();
-
-              if (data.success) {
-                input.value = "";
-                this.addComment(elements, data.comment);
-                this.ensureVisible(elements);
-              } else {
-                console.error("Server error:", data);
-                alert(data.error || "Failed to post comment");
-              }
-            } catch (error) {
-              console.error("Comment error:", error);
-              alert(
-                "Network error: Failed to post comment. Please check your connection and try again."
-              );
-            } finally {
-              if (button) {
-                button.disabled = false;
-                button.style.opacity = "1";
-              }
-            }
-          },
-
-          addComment(elements, comment) {
-            const { container } = elements;
-            if (!container) return;
-
-            // Remove no comments message
-            const noMsg = container.querySelector(".text-center.post-meta");
-            if (noMsg) noMsg.remove();
-
-            // Add comment with exact same structure as server-rendered comments
-            const html = `
-              <div class="flex comment-item px-4 py-3 bg-black">
-                <div class="w-10 h-10 rounded-full border-2 border-blue-600 relative flex-shrink-0">
-                  <img src="${
-                    comment.profile_pic ||
-                    "/media/profile_pics/blank-profile-picture.png"
-                  }" 
-                       alt="Profile Image" class="absolute h-full rounded-full w-full" />
-                </div>
-                <div class="text-dark py-2 px-3 rounded-lg bg-gray-50 h-full relative lg:ml-5 ml-2 lg:mr-20">
-                  <p class="leading-6 flex flex-col">
-                    <a href="/profile/${comment.username}">
-                      <strong class="comment-username">${
-                        comment.username
-                      }</strong>
-                    </a>
-                    <span class="comment-text">${comment.comment}</span>
-                  </p>
-                  <div class="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-                    <small class="comment-time text-xs text-gray-500">just now</small>
-                  </div>
-                </div>
-              </div>
-            `;
-
-            container.insertAdjacentHTML("beforeend", html);
-
-            // Scroll to new comment
-            setTimeout(() => {
-              container.scrollTop = container.scrollHeight;
-            }, 100);
-          },
-
-          ensureVisible(elements) {
-            const { section } = elements;
-            if (section?.classList.contains("hidden")) {
-              this.showComments(elements);
-            } else if (section) {
-              // Update height
-              requestAnimationFrame(() => {
-                section.style.maxHeight = section.scrollHeight + "px";
-              });
-            }
-          },
-        };
-
-        // Initialize optimized comment handler
-        CommentHandler.init();
-      });
-    </script>
   </body>
 </html>

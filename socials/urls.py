@@ -3,9 +3,7 @@ from  . import views
 
 urlpatterns = [
     # The root URL now renders index.html via the home view
-    path("", views.home, name="home"),
-    # New home view for index_simple.html
-    path("new_home", views.new_home, name="new_home"),
+    path("", views.new_home, name="new_home"),
     path("signin", views.signin, name="signin"),
     path("signup", views.signup, name="signup"),
     path("logout", views.logout, name="logout"),
