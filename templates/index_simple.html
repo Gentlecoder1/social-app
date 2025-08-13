@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>new-home</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="{% static 'home.js' %}"></script>
+    <script src="{% static 'home.js' %}?v=20250813"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -522,7 +522,7 @@
                   </div>
                 </div>
               </div>
-              <hr class="border-black" />
+              <hr class="border-black mb-2" />
 
               <!-- Media display - either image or video -->
               {% if post.media and post.media_type == 'video' %}
@@ -550,10 +550,8 @@
               </a>
               {% else %}
               <!-- Text-only post -->
-              <div
-                class="bg-gray-50 rounded-lg p-6 text-center border-l-4 border-blue-500"
-              >
-                <p class="text-[16px] text-gray-800 leading-relaxed">
+              <div class="bg-black mx-2 rounded-lg p-6 text-center">
+                <p class="text-[20px] font-bold text-blue-800 leading-relaxed">
                   {{ post.caption }}
                 </p>
               </div>
@@ -632,7 +630,7 @@
                   {% for comment in post.post_comments %}
                   <div class="flex comment-item px-4 py-3 bg-black">
                     <div
-                      class="w-10 h-10 rounded-full border-2 border-blue-600 relative flex-shrink-0"
+                      class="w-8 h-8 rounded-full border-2 border-blue-600 relative flex-shrink-0"
                     >
                       <img
                         src="{% if comment.username.profile.profilepic and comment.username.profile.profilepic.url %}{{ comment.username.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
@@ -641,7 +639,7 @@
                       />
                     </div>
                     <div
-                      class="text-dark py-2 px-3 rounded-lg bg-gray-50 h-full relative lg:ml-5 ml-2 lg:mr-20"
+                      class="text-dark py-1 px-3 rounded-lg bg-gray-50 h-full relative lg:ml-5 ml-2 lg:mr-20"
                     >
                       <p class="leading-6 flex flex-col">
                         <a href="{% url 'profile' comment.username.username %}">
@@ -650,6 +648,9 @@
                           >
                         </a>
                         <span class="comment-text">{{ comment.comment}}</span>
+                        <small class="comment-time text-xs text-gray-500"
+                          >{{ comment.created_at|timesince }} ago</small
+                        >
                       </p>
                       <div
                         class="absolute w-3 h-3 top-3 -left-1 bg-gray-50 transform rotate-45"

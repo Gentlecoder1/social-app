@@ -93,12 +93,13 @@ def upload(request):
         caption = request.POST.get("caption")
         media_file = request.FILES.get("image_upload") or request.FILES.get("video_upload")
 
-        if media_file:
+        # Check if there's content to post (caption or media)
+        if caption or media_file:
             new_post = Post.objects.create(user=request.user, caption=caption, media=media_file)
             new_post.save()
             messages.success(request, "Post uploaded successfully!")
         else:
-            messages.error(request, "Please select a file to upload.")
+            messages.error(request, "Please write something or select a file to upload.")
         
         return redirect('new_home')
     return render(request, "upload.html")

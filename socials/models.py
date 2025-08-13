@@ -37,7 +37,7 @@ class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     caption = models.TextField()
-    media = models.FileField(upload_to='post_media/', validators=[validate_media_file])
+    media = models.FileField(upload_to='post_media/', validators=[validate_media_file], null=True, blank=True)
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     no_of_likes = models.IntegerField(default=0)

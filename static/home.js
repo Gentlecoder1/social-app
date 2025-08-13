@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ).value;
       button.disabled = true;
       button.style.opacity = "0.6";
-      fetch("{% url 'like_post' %}", {
+      fetch("/like_post/", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
