@@ -27,12 +27,13 @@ def new_home(request):
     # Get suggested users (simple version)
     followed_users = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
     suggestions = User.objects.exclude(id=request.user.id).exclude(id__in=followed_users)[:5]
-    
+
     return render(request, "index_simple.html", {
         "user_profile": user_profile, 
         "posts": posts, 
         "liked_post_ids": liked_post_ids,
-        "suggestions": suggestions
+        "suggestions": suggestions,
+        "created_at": posts[0].created_at.strftime("%Y-%m-%d %H:%M:%S") if posts else None
     })
 
 def signin(request):
@@ -116,8 +117,15 @@ def profile(request, pk):
         messages.error(request, f"Profile for user '{pk}' does not exist.")
         return redirect('home')
     
-    # Get user's posts
-    posts = Post.objects.filter(user=user_object).order_by('-created_at')
+    # Get user's posts with comments and their users prefetched
+    posts = Post.objects.filter(user=user_object).prefetch_related(
+        'comments__username__profile',  # Prefetch comment authors and their profiles
+        'likes'  # Prefetch likes for efficiency
+    ).order_by('-created_at')
+    
+    # Add comments to each post (for template compatibility)
+    for post in posts:
+        post.post_comments = Comment.objects.filter(post_id=post).order_by('created_at')
 
     # Check if current user is following this user
     is_following = Follow.objects.filter(follower=request.user, following=user_object).exists()
@@ -127,6 +135,9 @@ def profile(request, pk):
     post_length = posts.count()
     user_followers = Follow.objects.filter(following=user_object).count()
     user_following = Follow.objects.filter(follower=user_object).count()
+    
+    # Get liked posts for current user
+    liked_post_ids = [like.post_id.id for like in LikePost.objects.filter(username=request.user)]
 
     context = {
         "user_profile": user_profile,
@@ -136,6 +147,7 @@ def profile(request, pk):
         "user_followers": user_followers,
         "user_following": user_following,
         "button_text": button_text,
+        "liked_post_ids": liked_post_ids,
     }
     return render(request, "profile.html", context)
 

@@ -459,7 +459,7 @@
                       </div>
                     </a>
                   </div>
-                  <div>
+                  <div class="flex flex-col">
                     <h3 class="font-semibold text-[15px]">
                       <a
                         href="{% url 'profile' post.user.username %}"
@@ -467,6 +467,9 @@
                         >{{ post.user.username }}</a
                       >
                     </h3>
+                    <small class="comment-time text-xs text-gray-500"
+                      >{{ post.created_at|short_timesince }} ago</small
+                    >
                   </div>
                 </span>
                 <!-- dropdown menu -->
@@ -575,7 +578,7 @@
               </div>
               <!-- no of comments -->
               <div>
-                <span class="mr-3">243 comments</span>
+                <span class="mr-3">{{ post.comments.count }} comments</span>
               </div>
 
               <!-- download media -->
@@ -624,11 +627,11 @@
             >
               <div class="comments-fade-overlay">
                 <div
-                  class="comments-scroll-container space-y-1"
+                  class="comments-scroll-container bg-black"
                   id="comments-container-{{ post.id }}"
                 >
                   {% for comment in post.post_comments %}
-                  <div class="flex comment-item px-4 py-3 bg-black">
+                  <div class="flex comment-item px-4 py-3">
                     <div
                       class="w-8 h-8 rounded-full border-2 border-blue-600 relative flex-shrink-0"
                     >
@@ -639,19 +642,21 @@
                       />
                     </div>
                     <div
-                      class="text-dark py-1 px-3 rounded-lg bg-gray-50 h-full relative lg:ml-5 ml-2 lg:mr-20"
+                      class="text-dark py-1 px-2 rounded-lg bg-gray-50 h-full relative lg:ml-5 ml-2 lg:mr-20"
                     >
-                      <p class="leading-6 flex flex-col">
-                        <a href="{% url 'profile' comment.username.username %}">
-                          <strong class="comment-username"
-                            >{{ comment.username.username }}</strong
-                          >
-                        </a>
-                        <span class="comment-text">{{ comment.comment}}</span>
-                        <small class="comment-time text-xs text-gray-500"
-                          >{{ comment.created_at|timesince }} ago</small
+                      <p>
+                        <a
+                          href="{% url 'profile' comment.username.username %}"
+                          class="comment-username hover:text-blue-600 text-xs font-semibold"
+                          >{{ comment.username.username }}</a
+                        >
+                        <span class="comment-time text-xs text-gray-500 ml-4"
+                          >{{ comment.created_at|short_timesince }}</span
                         >
                       </p>
+                      <span class="comment-text text-xs"
+                        >{{ comment.comment}}</span
+                      >
                       <div
                         class="absolute w-3 h-3 top-3 -left-1 bg-gray-50 transform rotate-45"
                       ></div>

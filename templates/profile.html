@@ -1,4 +1,4 @@
-{% load static %}
+{% load static %} {% load socials_extras %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -44,9 +44,49 @@
         padding: 1rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
       }
+
+      /* Post interaction styles */
+      .post-interaction {
+        color: #65676b;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 6px 8px;
+        border-radius: 6px;
+        transition: background-color 0.2s, color 0.2s;
+      }
+
+      .post-interaction:hover {
+        background-color: #f0f2f5;
+      }
+
+      .comment-input {
+        background-color: #f0f2f5;
+        border-radius: 16px;
+        font-size: 14px;
+      }
+
+      .comments-section {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease, opacity 0.3s ease;
+      }
+
+      .comments-section:not(.hidden) {
+        max-height: 300px;
+        opacity: 1;
+      }
+
+      .comments-scroll-container {
+        max-height: 200px;
+        overflow-y: auto;
+      }
     </style>
   </head>
   <body class="bg-gray-300 font-sans">
+    <!-- Hidden CSRF token for JavaScript -->
+    <div id="csrf-token-container" style="display: none">{% csrf_token %}</div>
+
     <!-- Navigation Header -->
     <nav class="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -198,43 +238,259 @@
 
         <!-- Posts Grid -->
         {% if posts %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- Post 1 -->
+        <div class="space-y-4">
           {% for post in posts %}
-          <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div class="relative overflow-hidden">
+          <!-- Miniature Post Card with Full Functionality -->
+          <div
+            class="bg-white max-w-3xl rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200"
+          >
+            <!-- Post Header -->
+            <div
+              class="p-3 flex items-center justify-between border-b border-gray-100"
+            >
+              <div class="flex items-center space-x-2">
+                <img
+                  src="{% if user_profile.profilepic and user_profile.profilepic.url %}{{ user_profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                  alt="Profile Picture"
+                  class="w-8 h-8 rounded-full object-cover"
+                />
+                <div>
+                  <h4 class="text-sm font-semibold text-gray-900">
+                    {{ user_profile.user.username }}
+                  </h4>
+                  <p class="text-xs text-gray-500">
+                    {{ post.created_at|short_timesince }}
+                  </p>
+                </div>
+              </div>
+              <!-- Working dropdown menu -->
+              <div class="relative">
+                <button
+                  class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors post-menu-btn"
+                  data-post-id="{{ post.id }}"
+                >
+                  <i class="fas fa-ellipsis-h text-sm"></i>
+                </button>
+                <div
+                  class="absolute right-0 top-8 bg-white w-48 shadow-lg rounded-md text-gray-900 hidden text-sm border border-gray-200 z-50 post-menu"
+                  data-post-id="{{ post.id }}"
+                >
+                  <ul class="space-y-1 p-2">
+                    <li>
+                      <a
+                        href="#"
+                        class="flex items-center px-3 py-2 hover:bg-gray-100 hover:text-blue-600 rounded-md"
+                      >
+                        <i class="fas fa-edit mr-2 text-xs"></i> Edit Caption
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="#"
+                        class="flex items-center px-3 py-2 hover:bg-gray-100 hover:text-blue-600 rounded-md"
+                      >
+                        <i class="fas fa-comment-slash mr-2 text-xs"></i>
+                        Disable comments
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="#"
+                        class="flex items-center px-3 py-2 hover:bg-gray-100 hover:text-blue-600 rounded-md"
+                      >
+                        <i class="fas fa-heart mr-2 text-xs"></i> Add to
+                        favorites
+                      </a>
+                    </li>
+                    <li>
+                      <hr class="my-1 border-gray-200" />
+                    </li>
+                    <li>
+                      <a
+                        href="#"
+                        class="flex items-center px-3 py-2 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-md"
+                      >
+                        <i class="fas fa-trash mr-2 text-xs"></i> Delete Post
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Post Content -->
+            <div class="p-3">
+              <!-- Caption (if exists) -->
+              {% if post.caption %}
+              <p class="text-sm text-gray-800 mb-3 leading-relaxed">
+                {{ post.caption }}
+              </p>
+              {% endif %}
+
+              <!-- Media display -->
               {% if post.media and post.media_type == 'video' %}
-              <a href="{{ post.media.url }}" class="post-media-link">
+              <div class="rounded-lg overflow-hidden bg-gray-100">
                 <video
                   src="{{ post.media.url }}"
-                  class="post-image"
+                  class="w-full h-48 object-cover"
                   controls
                   preload="metadata"
                 >
                   Your browser does not support the video tag.
                 </video>
-              </a>
+              </div>
               {% elif post.media %}
-              <a href="{{ post.media.url }}" class="post-media-link">
+              <div class="rounded-lg overflow-hidden bg-gray-100">
                 <img
                   src="{{ post.media.url }}"
                   alt="{{ post.caption }}"
-                  class="post-image"
+                  class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
                 />
-              </a>
+              </div>
+              {% else %}
+              <!-- Text-only post styling -->
               <div
-                class="bg-black-200 font-bold rounded-lg p-8 text-center text-white"
+                class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border-l-4 border-blue-400"
               >
-                <p class="text-[20px]">{{ post.caption }}</p>
+                <p class="text-sm font-medium text-blue-900">
+                  {{ post.caption }}
+                </p>
               </div>
               {% endif %}
             </div>
 
-            {% if post.caption %}
-            <div class="p-4">
-              <p class="text-gray-700 line-clamp-2">{{post.caption}}</p>
+            <!-- Engagement Count -->
+            <div
+              class="px-3 py-1 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500"
+            >
+              <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-1">
+                  <div
+                    class="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center"
+                  >
+                    <i class="fas fa-thumbs-up text-white text-xs"></i>
+                  </div>
+                  <span class="like-count" data-post-id="{{ post.id }}"
+                    >{{ post.no_of_likes }}</span
+                  >
+                </div>
+                <span>{{ post.comments.count }} comments</span>
+              </div>
+              {% if post.media %}
+              <a
+                href="{{ post.media.url }}"
+                download
+                class="hover:text-gray-600"
+              >
+                <i class="fas fa-download"></i>
+              </a>
+              {% endif %}
             </div>
-            {% endif %}
+
+            <!-- Post Actions with Full Functionality -->
+            <div
+              class="px-3 py-2 border-t border-gray-100 flex items-center justify-between"
+            >
+              <!-- Like button with functionality -->
+              <button
+                type="button"
+                class="post-interaction flex items-center justify-center flex-1 like-btn transition-colors duration-200"
+                data-post-id="{{ post.id }}"
+                data-liked="{{ post.id|isin:liked_post_ids }}"
+                style="color: #65676b"
+              >
+                <i class="far fa-thumbs-up mr-1 text-sm"></i>
+                <span class="text-xs">Like</span>
+              </button>
+
+              <!-- Comment button with functionality -->
+              <button
+                class="comment-toggle-btn post-interaction flex items-center justify-center flex-1"
+                data-post-id="{{ post.id }}"
+              >
+                <i class="far fa-comment mr-1 text-sm comment-icon"></i>
+                <span class="text-xs">Comment</span>
+              </button>
+
+              <!-- Share button -->
+              <button
+                class="post-interaction flex items-center justify-center flex-1"
+              >
+                <i class="fas fa-share mr-1 text-sm"></i>
+                <span class="text-xs">Share</span>
+              </button>
+            </div>
+
+            <!-- Comments Section (Initially Hidden) -->
+            <div
+              class="comments-section border-t hidden transition-all duration-300 ease-in-out"
+              data-post-id="{{ post.id }}"
+            >
+              <div class="comments-fade-overlay">
+                <div
+                  class="comments-scroll-container space-y-2 p-3"
+                  id="comments-container-{{ post.id }}"
+                >
+                  {% for comment in post.post_comments %}
+                  <div class="flex comment-item space-x-2">
+                    <div class="flex-shrink-0">
+                      <img
+                        src="{% if comment.username.profile.profilepic and comment.username.profile.profilepic.url %}{{ comment.username.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                        alt="Profile Image"
+                        class="w-6 h-6 rounded-full object-cover"
+                      />
+                    </div>
+                    <div class="bg-gray-100 rounded-lg px-3 py-2 flex-1">
+                      <div class="flex items-center justify-between">
+                        <a
+                          href="{% url 'profile' comment.username.username %}"
+                          class="text-xs font-semibold text-gray-900"
+                        >
+                          {{ comment.username.username }}
+                        </a>
+                        <small class="comment-time text-xs text-gray-500"
+                          >{{ comment.created_at|short_timesince }}</small
+                        >
+                      </div>
+                      <p class="text-xs text-gray-800 mt-1">
+                        {{ comment.comment }}
+                      </p>
+                    </div>
+                  </div>
+                  {% empty %}
+                  <div class="text-center post-meta py-2">
+                    <p class="text-xs text-gray-500">
+                      No comments yet. Be the first to comment!
+                    </p>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Comment Form -->
+            <div class="p-3 border-t border-gray-100">
+              <form class="comment-form" data-post-id="{{ post.id }}">
+                {% csrf_token %}
+                <input type="hidden" name="post_id" value="{{ post.id }}" />
+                <div class="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    name="comment"
+                    id="comment-{{ post.id }}"
+                    placeholder="Write your comment..."
+                    class="comment-input flex-1 py-2 px-3 focus:outline-none text-xs"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                  >
+                    Post
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
           {% endfor %}
         </div>
@@ -276,5 +532,8 @@
         </div>
       </div>
     </footer>
+
+    <!-- Load JavaScript after DOM is ready -->
+    <script src="{% static 'profile.js' %}"></script>
   </body>
 </html>

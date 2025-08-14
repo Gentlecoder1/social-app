@@ -130,11 +130,6 @@ document.addEventListener("DOMContentLoaded", function () {
     e.stopPropagation();
   });
 
-  // On mobile, show notifications sidebar by default
-  if (window.innerWidth < 768) {
-    toggleRightSidebar();
-  }
-
   // Post menu dropdown functionality
   document.addEventListener("click", function (e) {
     const menuBtn = e.target.closest(".post-menu-btn");
