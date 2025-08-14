@@ -161,6 +161,8 @@ def settings(request):
         location = request.POST.get("location")
         if request.FILES.get("image"):
             user_profile.profilepic = request.FILES["image"]
+        if request.FILES.get("cover_photo"):
+            user_profile.cover_photo = request.FILES["cover_photo"]
         user_profile.works_at = works_at
         user_profile.occupation = occupation
         user_profile.bio = bio

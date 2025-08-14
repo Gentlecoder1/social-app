@@ -5,189 +5,420 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Profile Settings - Manage your account" />
+    <title>Settings | Social Book</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link
-      href="{% static 'assets/images/favicon.png' %}"
-      rel="icon"
-      type="image/png"
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
-    <title>Settings</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="{% static 'assets/css/icons.css' %}" />
-    <link rel="stylesheet" href="{% static 'assets/css/uikit.css' %}" />
-    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}" />
-    <link rel="stylesheet" href="{% static 'assets/css/tailwind.css' %}" />
+    <link
+      rel="icon"
+      href="{% static 'images/fav.png' %}"
+      type="image/png"
+      sizes="16x16"
+    />
     <style>
-      @media (max-width: 600px) {
-        .container,
-        .grid,
-        .mt-12,
-        .gap-8 {
-          padding: 0 5px !important;
-          margin: 0 !important;
-          width: 100% !important;
-        }
+      .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+
+      .settings-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .input-field {
+        transition: all 0.3s ease;
+        border: 2px solid #e5e7eb;
+      }
+
+      .input-field:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-1px);
+      }
+
+      .profile-upload {
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+      }
+
+      .profile-upload:hover {
+        transform: scale(1.05);
+      }
+
+      .upload-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .profile-upload:hover .upload-overlay {
+        opacity: 1;
+      }
+
+      .cover-upload {
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        height: 200px;
+        width: 100%;
+        border-radius: 12px;
+      }
+
+      .cover-upload:hover {
+        transform: scale(1.02);
+      }
+
+      .cover-upload .upload-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: 12px;
+      }
+
+      .cover-upload:hover .upload-overlay {
+        opacity: 1;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-secondary {
+        transition: all 0.3s ease;
+      }
+
+      .btn-secondary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       }
     </style>
   </head>
 
-  <body>
-    <div class="container m-auto">
-      <h1 class="text-2xl leading-none text-gray-900 tracking-tight mt-3">
-        <a href="/">Home</a> / Account Setting for <b>{{user.username}}</b>
-      </h1>
-      <!-- <ul class="mt-5 -mr-3 flex-nowrap lg:overflow-hidden overflow-x-scroll uk-tab">
-            <li class="uk-active"><a href="#">General</a></li>
-            <li><a href="#">Profile</a></li>
-            <li><a href="#">Privacy</a></li>
-            <li><a href="#">Notification</a></li>
-            <li><a href="#">Social links</a></li>
-            <li><a href="#">Billing</a></li>
-            <li><a href="#">Security</a></li>
-        </ul> -->
-      <br />
-      <hr />
-      <div class="grid lg:grid-cols-3 mt-12 gap-8">
-        <div>
-          <h3 class="text-xl mb-2">General</h3>
-          <p></p>
+  <body class="bg-gray-50 min-h-screen">
+    <!-- Navigation Header -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3">
+              <div
+                class="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-cog text-white text-sm"></i>
+              </div>
+              <h1 class="text-xl font-bold text-gray-900">Profile Settings</h1>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-4">
+            <a
+              href="/"
+              class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 hover:text-gray-900 transition-colors"
+            >
+              <i class="fas fa-arrow-left mr-2"></i>
+              <span>Back to Home</span>
+            </a>
+          </div>
         </div>
-        <div class="bg-white rounded-md lg:shadow-lg shadow col-span-2">
-          <form action="" method="POST" enctype="multipart/form-data">
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-20 pb-12">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Welcome Section -->
+        <div class="text-center mb-12">
+          <h2 class="text-3xl font-bold text-gray-900 mb-3">
+            Welcome,
+            <span class="gradient-bg bg-clip-text text-transparent"
+              >{{user.username}}</span
+            >
+          </h2>
+          <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+            Customize your profile and manage your account preferences to make
+            your experience unique.
+          </p>
+        </div>
+
+        <!-- Settings Form -->
+        <div class="settings-card rounded-2xl shadow-xl overflow-hidden">
+          <!-- Header -->
+          <div class="gradient-bg px-8 py-6">
+            <div class="flex items-center space-x-3">
+              <div
+                class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-user-edit text-white"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-semibold text-white">
+                  Profile Information
+                </h3>
+                <p class="text-white/80 text-sm">
+                  Update your personal details and preferences
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Content -->
+          <form
+            action=""
+            method="POST"
+            enctype="multipart/form-data"
+            class="p-8"
+          >
             {% csrf_token %}
-            <div class="grid grid-cols-2 gap-3 lg:p-6 p-4">
-              <div class="col-span-2">
-                <label for=""> Profile Image</label>
-                <img
-                  width="100"
-                  height="100"
-                  src="{% if user_profile.profilepic and user_profile.profilepic.url %}{{ user_profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
-                />
+
+            <div class="grid lg:grid-cols-2 gap-8">
+              <!-- Profile Picture Section -->
+              <div class="lg:col-span-2 flex flex-col items-center mb-8">
+                <label
+                  class="block text-sm font-semibold text-gray-700 mb-4 text-center"
+                >
+                  Profile Picture
+                </label>
+                <div
+                  class="profile-upload w-32 h-32 rounded-full border-4 border-white shadow-lg mb-4"
+                >
+                  <img
+                    class="w-full h-full rounded-full object-cover"
+                    src="{% if user_profile.profilepic and user_profile.profilepic.url %}{{ user_profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                    alt="Profile Picture"
+                  />
+                  <div class="upload-overlay rounded-full">
+                    <i class="fas fa-camera text-white text-xl"></i>
+                  </div>
+                </div>
                 <input
                   type="file"
                   name="image"
-                  value=""
-                  class="shadow-none bg-gray-100"
+                  accept="image/*"
+                  class="hidden"
+                  id="profile-image"
                 />
+                <label
+                  for="profile-image"
+                  class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors"
+                >
+                  <i class="fas fa-upload mr-2"></i>
+                  Change Picture
+                </label>
               </div>
-              <div class="col-span-2">
-                <label for="works_at">Works @</label>
+
+              <!-- Cover Photo Section -->
+              <div class="lg:col-span-2 mb-8">
+                <label
+                  class="block text-sm font-semibold text-gray-700 mb-4 text-center"
+                >
+                  Cover Photo
+                </label>
+                <div class="cover-upload border-4 border-white shadow-lg mb-4">
+                  <img
+                    class="w-full h-full object-cover"
+                    src="{% if user_profile.cover_photo and user_profile.cover_photo.url %}{{ user_profile.cover_photo.url }}{% else %}https://images.unsplash.com/photo-1557683316-973673baf926?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80{% endif %}"
+                    alt="Cover Photo"
+                    id="cover-preview"
+                  />
+                  <div class="upload-overlay">
+                    <div class="text-center">
+                      <i class="fas fa-image text-white text-2xl mb-2"></i>
+                      <p class="text-white text-sm">Change Cover Photo</p>
+                    </div>
+                  </div>
+                </div>
                 <input
-                  type="text"
-                  name="works_at"
-                  id="works_at"
-                  value="{{user_profile.works_at}}"
-                  class="shadow-none bg-gray-100"
+                  type="file"
+                  name="cover_photo"
+                  accept="image/*"
+                  class="hidden"
+                  id="cover-image"
                 />
+                <div class="text-center">
+                  <label
+                    for="cover-image"
+                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 cursor-pointer transition-all shadow-md"
+                  >
+                    <i class="fas fa-camera mr-2"></i>
+                    Upload Cover Photo
+                  </label>
+                </div>
+                <p class="text-xs text-gray-500 text-center mt-2">
+                  Recommended size: 1200x400px. Maximum file size: 5MB
+                </p>
               </div>
-              <div class="col-span-2">
-                <label for="occupation">Occupation</label>
-                <input
-                  type="text"
-                  name="occupation"
-                  id="occupation"
-                  value="{{user_profile.occupation}}"
-                  class="shadow-none bg-gray-100"
-                />
+
+              <!-- Form Fields -->
+              <div class="space-y-6">
+                <!-- Works At -->
+                <div>
+                  <label
+                    for="works_at"
+                    class="block text-sm font-semibold text-gray-700 mb-2"
+                  >
+                    <i class="fas fa-building mr-2 text-gray-400"></i>
+                    Works At
+                  </label>
+                  <input
+                    type="text"
+                    name="works_at"
+                    id="works_at"
+                    value="{{user_profile.works_at}}"
+                    placeholder="e.g., Google, Microsoft, Freelancer"
+                    class="input-field w-full px-4 py-3 rounded-lg bg-gray-50 border-2 border-gray-200 focus:border-indigo-500 focus:bg-white focus:outline-none"
+                  />
+                </div>
+
+                <!-- Location -->
+                <div>
+                  <label
+                    for="location"
+                    class="block text-sm font-semibold text-gray-700 mb-2"
+                  >
+                    <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    id="location"
+                    value="{{user_profile.location}}"
+                    placeholder="e.g., San Francisco, CA"
+                    class="input-field w-full px-4 py-3 rounded-lg bg-gray-50 border-2 border-gray-200 focus:border-indigo-500 focus:bg-white focus:outline-none"
+                  />
+                </div>
               </div>
-              <div class="col-span-2">
-                <label for="about">Bio</label>
+
+              <div class="space-y-6">
+                <!-- Occupation -->
+                <div>
+                  <label
+                    for="occupation"
+                    class="block text-sm font-semibold text-gray-700 mb-2"
+                  >
+                    <i class="fas fa-briefcase mr-2 text-gray-400"></i>
+                    Occupation
+                  </label>
+                  <input
+                    type="text"
+                    name="occupation"
+                    id="occupation"
+                    value="{{user_profile.occupation}}"
+                    placeholder="e.g., Software Engineer, Designer"
+                    class="input-field w-full px-4 py-3 rounded-lg bg-gray-50 border-2 border-gray-200 focus:border-indigo-500 focus:bg-white focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <!-- Bio Section -->
+              <div class="lg:col-span-2">
+                <label
+                  for="bio"
+                  class="block text-sm font-semibold text-gray-700 mb-2"
+                >
+                  <i class="fas fa-quote-right mr-2 text-gray-400"></i>
+                  About Me
+                </label>
                 <textarea
-                  id="about"
+                  id="bio"
                   name="bio"
-                  rows="3"
-                  class="shadow-none bg-gray-100"
+                  rows="4"
+                  placeholder="Tell us about yourself... What makes you unique?"
+                  class="input-field w-full px-4 py-3 rounded-lg bg-gray-50 border-2 border-gray-200 focus:border-indigo-500 focus:bg-white focus:outline-none resize-none"
                 >
 {{user_profile.bio}}</textarea
                 >
-              </div>
-              <div class="col-span-2">
-                <label for=""> Location</label>
-                <input
-                  type="text"
-                  name="location"
-                  value="{{user_profile.location}}"
-                  class="shadow-none bg-gray-100"
-                />
+                <p class="text-xs text-gray-500 mt-1">
+                  <span id="bio-count">0</span>/500 characters
+                </p>
               </div>
             </div>
 
-            <div class="bg-gray-10 p-6 pt-0 flex justify-end space-x-3">
-              <button class="p-2 px-4 rounded bg-gray-50 text-red-500">
-                <a href="/">Cancel</a>
+            <!-- Action Buttons -->
+            <div
+              class="flex flex-col sm:flex-row gap-4 justify-end mt-10 pt-8 border-t border-gray-100"
+            >
+              <a
+                href="/"
+                class="btn-secondary inline-flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition-all"
+              >
+                <i class="fas fa-times mr-2"></i>
+                Cancel
+              </a>
+              <button
+                type="submit"
+                class="btn-primary inline-flex items-center justify-center px-8 py-3 text-white rounded-lg font-medium shadow-lg"
+              >
+                <i class="fas fa-save mr-2"></i>
+                Save Changes
               </button>
-              <button type="submit" class="button bg-blue-700">Save</button>
             </div>
           </form>
         </div>
 
-        <!-- <div>
-                <h3 class="text-xl mb-2"> Privacy</h3>
-                <p> </p>
+        <!-- Additional Info Card -->
+        <div class="mt-8 bg-blue-50 rounded-xl p-6 border border-blue-100">
+          <div class="flex items-start space-x-3">
+            <div
+              class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1"
+            >
+              <i class="fas fa-info-circle text-blue-600 text-sm"></i>
             </div>
-            <div class="bg-white rounded-md lg:shadow-lg shadow lg:p-6 p-4 col-span-2">
-
-            <div class="space-y-3">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h4> Who can follow me ?</h4>
-                        <div>  </div>
-                    </div>
-                    <div class="switches-list -mt-8 is-large">
-                        <div class="switch-container">
-                            <label class="switch"><input type="checkbox"><span class="switch-button"></span> </label>
-                        </div>
-                    </div>
-                </div>
-                <hr>
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h4> Show my activities ?</h4>
-                        <div>  </div>
-                    </div>
-                    <div class="switches-list -mt-8 is-large">
-                        <div class="switch-container">
-                            <label class="switch"><input type="checkbox" checked><span class="switch-button"></span> </label>
-                        </div>
-                    </div>
-                </div>
-                <hr>
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h4> Search engines?</h4>
-                        <div>  </div>
-                    </div>
-                    <div class="switches-list -mt-8 is-large">
-                        <div class="switch-container">
-                            <label class="switch"><input type="checkbox"><span class="switch-button"></span> </label>
-                        </div>
-                    </div>
-                </div>
-                <hr>
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h4> Allow Commenting?</h4>
-                        <div>  </div>
-                    </div>
-                    <div class="switches-list -mt-8 is-large">
-                        <div class="switch-container">
-                            <label class="switch"><input type="checkbox"><span class="switch-button"></span> </label>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-        <br />
+            <div>
+              <h4 class="font-semibold text-blue-900 mb-2">
+                Privacy & Security
+              </h4>
+              <p class="text-blue-700 text-sm leading-relaxed">
+                Your profile information helps others connect with you. You can
+                control who sees your information in your privacy settings. All
+                changes are saved automatically and take effect immediately.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </main>
 
-    <!-- Scripts
-    ================================================== -->
-    <script src="{% static 'assets/js/tippy.all.min.js' %}"></script>
-    <script src="{% static 'assets/js/jquery-ultra-minimal.js' %}"></script>
-    <script src="{% static 'assets/js/uikit.js' %}"></script>
-    <script src="{% static 'assets/js/simplebar.min.js' %}"></script>
-    <script src="{% static 'assets/js/custom.js' %}"></script>
+    <!-- JavaScript for enhanced interactions -->
+    <script>
+      // Form validation and smooth submission
+      const form = document.querySelector("form");
+      const submitBtn = document.querySelector('button[type="submit"]');
 
-    <script src="{% static '../../unpkg.com/ionicons%405.2.3/dist/ionicons.js' %}"></script>
+      form.addEventListener("submit", function (e) {
+        submitBtn.innerHTML =
+          '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+        submitBtn.disabled = true;
+      });
+    </script>
   </body>
 </html>

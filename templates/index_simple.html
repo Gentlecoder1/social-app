@@ -490,16 +490,7 @@
                           href="#"
                           class="flex items-center px-3 py-2 hover:bg-gray-100 hover:text-blue-600 rounded-md"
                         >
-                          <i class="fas fa-edit mr-2"></i> Edit Caption
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href="#"
-                          class="flex items-center px-3 py-2 hover:bg-gray-100 hover:text-blue-600 rounded-md"
-                        >
-                          <i class="fas fa-comment-slash mr-2"></i> Disable
-                          comments
+                          <i class="fas fa-edit mr-2"></i> Save Post
                         </a>
                       </li>
                       <li>
@@ -513,6 +504,7 @@
                       <li>
                         <hr class="my-2 border-gray-200" />
                       </li>
+                      {% if user_object.username == post.user.username %}
                       <li>
                         <a
                           href="#"
@@ -521,6 +513,7 @@
                           <i class="fas fa-trash mr-2"></i> Delete Post
                         </a>
                       </li>
+                      {% endif %}
                     </ul>
                   </div>
                 </div>

@@ -13,6 +13,7 @@ class Profile(models.Model):
     occupation = models.CharField(max_length=100, blank=True)
     bio = models.TextField(blank=True) 
     profilepic = models.ImageField(upload_to='profile_pics/', default='blank-profile-picture.png')
+    cover_photo = models.ImageField(upload_to='cover_photos/', blank=True, null=True)
     location = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
