@@ -1,197 +1,240 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="{% static 'assets/images/favicon.png' %}"
-      rel="icon"
-      type="image/png"
-    />
     <title>Sign Up - Social Book</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="{% static 'assets/css/icons.css' %}" />
-    <link rel="stylesheet" href="{% static 'assets/css/uikit.css' %}" />
-    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}" />
-    <link rel="stylesheet" href="{% static 'assets/css/tailwind.css' %}" />
-    <style>
-      @media (max-width: 600px) {
-        .max-w-md,
-        .max-w-xl,
-        .p-6,
-        .lg\:p-12 {
-          padding: 0 10px !important;
-          margin: 0 !important;
-          width: 100% !important;
-        }
-        .header_inner,
-        .right-side,
-        .left-side {
-          flex-direction: column !important;
-          align-items: flex-start !important;
-        }
-      }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="{% static 'styles.css' %}" />
   </head>
-
-  <body class="bg-gray-100">
-    <div id="wrapper" class="flex flex-col justify-between h-screen">
-      <!-- header-->
-      <div class="bg-white py-4 shadow dark:bg-gray-800">
-        <div class="max-w-6xl mx-auto">
-          <div class="flex items-center lg:justify-between justify-around">
-            <a href="trending.html">
-              <b><h1 style="font-size: 1.5rem">Social Book</h1></b>
-            </a>
-
-            <div
-              class="capitalize flex font-semibold hidden lg:block my-2 space-x-3 text-center text-sm"
-            >
-              <a
-                href="/signin"
-                class="bg-pink-500 pink-500 px-6 py-3 rounded-md shadow text-white"
-                >Login</a
-              >
-            </div>
-          </div>
+  <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Main Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-30">
+      <div
+        class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between"
+      >
+        <div class="flex items-center">
+          <h1 class="text-2xl font-bold text-blue-600">Social Book</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <span class="text-gray-600 text-sm">Already have an account?</span>
+          <a
+            href="/signin"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300"
+          >
+            Sign In
+          </a>
         </div>
       </div>
+    </header>
 
-      <!-- Content-->
-
-      <div>
+    <!-- Main Content -->
+    <div class="flex-1 flex items-center justify-center px-4 py-12">
+      <div class="max-w-md w-full">
+        <!-- Welcome Card -->
         <div
-          class="lg:p-12 max-w-md max-w-xl lg:my-0 my-12 mx-auto p-6 space-y-"
+          class="bg-white rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.1)] p-8 mb-6"
         >
-          <h1 class="lg:text-3xl text-xl font-semibold mb-6">Sign Up</h1>
-          <!--<p class="mb-2 text-black text-lg"> Register to manage your account </p>-->
+          <div class="text-center mb-8">
+            <div
+              class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4"
+            >
+              <i class="fas fa-user-plus text-blue-600 text-2xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+              Join Social Book
+            </h2>
+            <p class="text-gray-600">
+              Create your account to connect with friends
+            </p>
+          </div>
 
-          <div>
-            <style>
-              h5 {
-                color: red;
-              }
-            </style>
+          <!-- Error Messages -->
+          {% if messages %}
+          <div class="mb-6">
             {% for message in messages %}
-            <h5>{{message}}</h5>
+            <div
+              class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
+            >
+              <div class="flex items-center">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <span class="text-sm">{{ message }}</span>
+              </div>
+            </div>
             {% endfor %}
           </div>
+          {% endif %}
 
-          <form action="" method="POST">
+          <!-- Sign Up Form -->
+          <form action="" method="POST" class="space-y-5">
             {% csrf_token %}
-            <input
-              type="text"
-              name="username"
-              placeholder="Username"
-              class="bg-gray-200 mb-2 shadow-none dark:bg-gray-800"
-              style="border: 1px solid #d3d5d8 !important"
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              class="bg-gray-200 mb-2 shadow-none dark:bg-gray-800"
-              style="border: 1px solid #d3d5d8 !important"
-            />
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              class="bg-gray-200 mb-2 shadow-none dark:bg-gray-800"
-              style="border: 1px solid #d3d5d8 !important"
-            />
-            <input
-              type="password"
-              name="password2"
-              placeholder="Confirm Password"
-              class="bg-gray-200 mb-2 shadow-none dark:bg-gray-800"
-              style="border: 1px solid #d3d5d8 !important"
-            />
-            <!-- <div class="flex justify-start my-4 space-x-1">
-                        <div class="checkbox">
-                            <input type="checkbox" id="chekcbox1" checked>
-                            <label for="chekcbox1"><span class="checkbox-icon"></span> I Agree</label>
-                        </div>
-                        <a href="#"> Terms and Conditions</a>
-                    </div> -->
+            <div>
+              <label
+                for="username"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Username
+              </label>
+              <div class="relative">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                  <i class="fas fa-user text-gray-400"></i>
+                </div>
+                <input
+                  type="text"
+                  name="username"
+                  id="username"
+                  placeholder="Choose a username"
+                  required
+                  class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                for="email"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Email Address
+              </label>
+              <div class="relative">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                  <i class="fas fa-envelope text-gray-400"></i>
+                </div>
+                <input
+                  type="email"
+                  name="email"
+                  id="email"
+                  placeholder="Enter your email"
+                  required
+                  class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                for="password"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Password
+              </label>
+              <div class="relative">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                  <i class="fas fa-lock text-gray-400"></i>
+                </div>
+                <input
+                  type="password"
+                  name="password"
+                  id="password"
+                  placeholder="Create a password"
+                  required
+                  class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                for="password2"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Confirm Password
+              </label>
+              <div class="relative">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                  <i class="fas fa-lock text-gray-400"></i>
+                </div>
+                <input
+                  type="password"
+                  name="password2"
+                  id="password2"
+                  placeholder="Confirm your password"
+                  required
+                  class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="flex items-start">
+              <div class="flex items-center h-5">
+                <input
+                  id="terms"
+                  name="terms"
+                  type="checkbox"
+                  required
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+              </div>
+              <div class="ml-3 text-sm">
+                <label for="terms" class="text-gray-700">
+                  I agree to the
+                  <a href="#" class="text-blue-600 hover:underline"
+                    >Terms of Service</a
+                  >
+                  and
+                  <a href="#" class="text-blue-600 hover:underline"
+                    >Privacy Policy</a
+                  >
+                </label>
+              </div>
+            </div>
+
             <button
               type="submit"
-              class="bg-gradient-to-br from-pink-500 py-3 rounded-md text-white text-xl to-red-400 w-full"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:-translate-y-0.5 transform"
             >
-              Sign Up
+              <i class="fas fa-user-plus mr-2"></i>
+              Create Account
             </button>
-            <div class="text-center mt-5 space-x-2">
-              <p class="text-base">
-                Do you have an account? <a href="/signin"> Login </a>
-              </p>
-            </div>
           </form>
-        </div>
-      </div>
 
-      <!-- Footer -->
-
-      <div class="lg:mb-5 py-3 uk-link-reset">
-        <div
-          class="flex flex-col items-center justify-between lg:flex-row max-w-6xl mx-auto lg:space-y-0 space-y-3"
-        >
-          <div class="flex space-x-2 text-gray-700 uppercase">
-            <a href="#"> About</a>
-            <a href="#"> Help</a>
-            <a href="#"> Terms</a>
-            <a href="#"> Privacy</a>
+          <!-- Divider -->
+          <div class="mt-8 mb-6">
+            <div class="relative">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300"></div>
+              </div>
+              <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white text-gray-500"
+                  >Already have an account?</span
+                >
+              </div>
+            </div>
           </div>
-          <p class="capitalize">© copyright 2020 by socol</p>
+
+          <!-- Sign In Link -->
+          <div class="text-center">
+            <a
+              href="/signin"
+              class="w-full inline-flex justify-center items-center border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium py-3 px-4 rounded-lg transition-all duration-300"
+            >
+              <i class="fas fa-sign-in-alt mr-2"></i>
+              Sign In Instead
+            </a>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-gray-500 text-sm">
+          <p class="mb-2">Join thousands of people connecting on Social Book</p>
+          <p>© 2025 Social Book. All rights reserved.</p>
         </div>
       </div>
     </div>
-
-    <!--<script>
-        
-        (function (window, document, undefined) {
-            'use strict';
-            if (!('localStorage' in window)) return;
-            var nightMode = localStorage.getItem('gmtNightMode');
-            if (nightMode) {
-                document.documentElement.className += ' dark';
-            }
-        })(window, document);
-    
-    
-        (function (window, document, undefined) {
-    
-            'use strict';
-    
-            // Feature test
-            if (!('localStorage' in window)) return;
-    
-            // Get our newly insert toggle
-            var nightMode = document.querySelector('#night-mode');
-            if (!nightMode) return;
-    
-            // When clicked, toggle night mode on or off
-            nightMode.addEventListener('click', function (event) {
-                event.preventDefault();
-                document.documentElement.classList.toggle('dark');
-                if (document.documentElement.classList.contains('dark')) {
-                    localStorage.setItem('gmtNightMode', true);
-                    return;
-                }
-                localStorage.removeItem('gmtNightMode');
-            }, false);
-    
-        })(window, document);
-    </script>-->
-
-    <!-- Scripts
-    ================================================== -->
-    <script src="{% static 'assets/js/tippy.all.min.js' %}"></script>
-    <script src="{% static 'assets/js/jquery-ultra-minimal.js' %}"></script>
-    <script src="{% static 'assets/js/uikit.js' %}"></script>
-    <script src="{% static 'assets/js/simplebar.min.js' %}"></script>
-    <script src="{% static 'assets/js/custom.js' %}"></script>
   </body>
 </html>
