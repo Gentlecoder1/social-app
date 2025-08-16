@@ -4,9 +4,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>new-home</title>
+    <title>Home</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="{% static 'home.js' %}?v=20250813"></script>
+    <script src="{% static 'home.js' %}?v=20250816"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -51,16 +51,13 @@
 
         <!-- notification and profile -->
         <div class="flex items-center space-x-4">
-          <button class="md:hidden text-gray-600">
-            <i class="fas fa-search text-xl"></i>
-          </button>
-          <!-- Notification Button - Hidden on mobile -->
-          <div class="relative hidden md:block">
+          <!-- Notification Button - Smaller on mobile, positioned where search was -->
+          <div class="relative">
             <button
               id="headerNotificationToggle"
-              class="text-gray-600 hover:text-blue-500 p-2 rounded-full relative"
+              class="text-gray-600 hover:text-blue-500 p-2 rounded-full relative md:p-2"
             >
-              <i class="fas fa-bell text-xl"></i>
+              <i class="fas fa-bell text-lg md:text-xl"></i>
               <span class="notification-badge">3</span>
             </button>
           </div>
@@ -111,8 +108,7 @@
         class="w-[280px] bg-white h-screen fixed z-20 overflow-y-auto"
       >
         <div class="p-4">
-          <div class="flex justify-between items-center mb-6">
-            <h1 class="text-[24px] font-bold text-black">Friends.</h1>
+          <div class="flex justify-between items-center mb-3">
             <button
               id="closeSidebar"
               class="md:hidden text-gray-500 hover:bg-gray-100 p-2 rounded-full"
@@ -122,13 +118,16 @@
           </div>
 
           <div class="mb-6">
-            <h2 class="text-[17px] font-semibold text-[#65676b] mb-2 pl-2">
-              Home
-            </h2>
             <ul>
-              <li
-                class="sidebar-item flex items-center cursor-pointer font-medium bg-[#f0f2f5]"
-              >
+              <a href="/">
+                <li class="sidebar-item flex items-center cursor-pointer">
+                  <i
+                    class="fas fa-home w-[36px] text-[20px] text-[#1b74e4]"
+                  ></i>
+                  <span>Home</span>
+                </li>
+              </a>
+              <li class="sidebar-item flex items-center cursor-pointer">
                 <i
                   class="fas fa-user-friends w-[36px] text-[20px] text-[#1b74e4]"
                 ></i>
@@ -138,10 +137,14 @@
                 <i class="fas fa-users w-[36px] text-[20px] text-[#1b74e4]"></i>
                 <span>Groups</span>
               </li>
-              <li class="sidebar-item flex items-center cursor-pointer">
-                <i class="fas fa-store w-[36px] text-[20px] text-[#1b74e4]"></i>
-                <span>Marketplace</span>
-              </li>
+              <a href="search">
+                <li class="sidebar-item flex items-center cursor-pointer">
+                  <i
+                    class="fas fa-search w-[36px] text-[20px] text-[#1b74e4]"
+                  ></i>
+                  <span>Search</span>
+                </li>
+              </a>
               <li class="sidebar-item flex items-center cursor-pointer">
                 <i
                   class="fas fa-bookmark w-[36px] text-[20px] text-[#1b74e4]"
@@ -223,21 +226,6 @@
       <!-- Main Content -->
       <div class="flex-1 md:ml-[280px] pt-4">
         <div class="max-w-[680px] mx-auto p-4">
-          <!-- Notification button for mobile -->
-          <button
-            id="mobileNotificationToggle"
-            class="md:hidden w-full bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4 p-3 flex items-center justify-between"
-          >
-            <div class="flex items-center">
-              <div class="relative mr-3">
-                <i class="fas fa-bell text-xl text-gray-600"></i>
-                <span class="notification-badge">3</span>
-              </div>
-              <span class="font-medium">Notifications</span>
-            </div>
-            <i class="fas fa-chevron-right text-gray-500"></i>
-          </button>
-
           <!-- Upload a post -->
           <div
             class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"

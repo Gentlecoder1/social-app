@@ -13,10 +13,6 @@
     <title>Sign In - Social Book</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="{% static 'assets/css/icons.css' %}" />
-    <link rel="stylesheet" href="{% static 'assets/css/uikit.css' %}" />
-    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}" />
-    <link rel="stylesheet" href="{% static 'assets/css/tailwind.css' %}" />
     <style>
       @media (max-width: 600px) {
         .max-w-md,
@@ -121,50 +117,5 @@
         </div>
       </div>
     </div>
-
-    <!--<script>
-        
-        (function (window, document, undefined) {
-            'use strict';
-            if (!('localStorage' in window)) return;
-            var nightMode = localStorage.getItem('gmtNightMode');
-            if (nightMode) {
-                document.documentElement.className += ' dark';
-            }
-        })(window, document);
-    
-    
-        (function (window, document, undefined) {
-    
-            'use strict';
-    
-            // Feature test
-            if (!('localStorage' in window)) return;
-    
-            // Get our newly insert toggle
-            var nightMode = document.querySelector('#night-mode');
-            if (!nightMode) return;
-    
-            // When clicked, toggle night mode on or off
-            nightMode.addEventListener('click', function (event) {
-                event.preventDefault();
-                document.documentElement.classList.toggle('dark');
-                if (document.documentElement.classList.contains('dark')) {
-                    localStorage.setItem('gmtNightMode', true);
-                    return;
-                }
-                localStorage.removeItem('gmtNightMode');
-            }, false);
-    
-        })(window, document);
-    </script>-->
-
-    <!-- Scripts
-    ================================================== -->
-    <script src="{% static 'assets/js/tippy.all.min.js' %}"></script>
-    <script src="{% static 'assets/js/jquery-ultra-minimal.js' %}"></script>
-    <script src="{% static 'assets/js/uikit.js' %}"></script>
-    <script src="{% static 'assets/js/simplebar.min.js' %}"></script>
-    <script src="{% static 'assets/js/custom.js' %}"></script>
   </body>
 </html>

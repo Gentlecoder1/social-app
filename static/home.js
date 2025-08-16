@@ -28,13 +28,15 @@ document.addEventListener("DOMContentLoaded", function () {
     const toggle = document.getElementById(pId);
     const input = document.getElementById(inputId);
 
-    toggle.addEventListener("click", (e) => {
-      e.stopPropagation(); // Prevent global click from hiding it immediately
-      input.classList.toggle("hidden");
-    });
+    if (toggle && input) {
+      toggle.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent global click from hiding it immediately
+        input.classList.toggle("hidden");
+      });
+    }
   }
 
-  // Set up toggles for photo and video
+  // Set up toggles for photo and video (only if elements exist)
   setupToggle("photo-toggle", "photo-input");
   setupToggle("video-toggle", "video-input");
 
@@ -46,10 +48,12 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Toggle profile dropdown
-  profileButton.addEventListener("click", function (e) {
-    e.stopPropagation();
-    profileDropdown.classList.toggle("hidden");
-  });
+  if (profileButton && profileDropdown) {
+    profileButton.addEventListener("click", function (e) {
+      e.stopPropagation();
+      profileDropdown.classList.toggle("hidden");
+    });
+  }
 
   // Toggle right sidebar (notifications)
   function toggleRightSidebar() {
@@ -95,40 +99,54 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  closeRightSidebar.addEventListener("click", function (e) {
-    e.stopPropagation();
-    toggleRightSidebar();
-  });
+  if (closeRightSidebar) {
+    closeRightSidebar.addEventListener("click", function (e) {
+      e.stopPropagation();
+      toggleRightSidebar();
+    });
+  }
 
-  rightSidebarOverlay.addEventListener("click", function (e) {
-    e.stopPropagation();
-    toggleRightSidebar();
-  });
+  if (rightSidebarOverlay) {
+    rightSidebarOverlay.addEventListener("click", function (e) {
+      e.stopPropagation();
+      toggleRightSidebar();
+    });
+  }
 
-  sidebarToggle.addEventListener("click", function (e) {
-    e.stopPropagation();
-    toggleSidebar();
-  });
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener("click", function (e) {
+      e.stopPropagation();
+      toggleSidebar();
+    });
+  }
 
-  closeSidebar.addEventListener("click", function (e) {
-    e.stopPropagation();
-    toggleSidebar();
-  });
+  if (closeSidebar) {
+    closeSidebar.addEventListener("click", function (e) {
+      e.stopPropagation();
+      toggleSidebar();
+    });
+  }
 
-  sidebarOverlay.addEventListener("click", function (e) {
-    e.stopPropagation();
-    toggleSidebar();
-  });
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener("click", function (e) {
+      e.stopPropagation();
+      toggleSidebar();
+    });
+  }
 
   // Close dropdown when clicking outside
   document.addEventListener("click", function () {
-    profileDropdown.classList.add("hidden");
+    if (profileDropdown) {
+      profileDropdown.classList.add("hidden");
+    }
   });
 
   // Prevent clicks inside dropdown from closing it
-  profileDropdown.addEventListener("click", function (e) {
-    e.stopPropagation();
-  });
+  if (profileDropdown) {
+    profileDropdown.addEventListener("click", function (e) {
+      e.stopPropagation();
+    });
+  }
 
   // Post menu dropdown functionality
   document.addEventListener("click", function (e) {
