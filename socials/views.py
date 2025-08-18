@@ -6,35 +6,56 @@ from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib.auth.models import User
 from .models import Profile, Post, LikePost, Comment, Follow
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_page
+from django.core.cache import cache
+from django.views.decorators.vary import vary_on_cookie
 import random
 
 #new home view
 @login_required(login_url='signin')
+@vary_on_cookie
+@cache_page(60 * 2)  # Cache for 2 minutes
 def new_home(request):
+    # Try to get from cache first
+    cache_key = f'home_posts_{request.user.id}'
+    cached_data = cache.get(cache_key)
+    
+    if cached_data:
+        return render(request, "index_simple.html", cached_data)
+    
     # Get user profile
-    user_profile = Profile.objects.get(user=request.user)
+    user_profile = Profile.objects.select_related('user').get(user=request.user)
 
-    # Get posts (excluding current user's posts)
-    posts = Post.objects.exclude(user=request.user).order_by('-created_at')
+    # Get posts with optimized queries using select_related and prefetch_related
+    posts = Post.objects.exclude(user=request.user).select_related('user', 'user__profile').prefetch_related(
+        'comments__username__profile'  # Prefetch comments and their authors to avoid N+1 queries
+    ).order_by('-created_at')[:20]  # Limit to 20 posts for better performance
     
     # Get the list of post IDs that the current user has liked
     liked_post_ids = LikePost.objects.filter(username=request.user).values_list('post_id', flat=True)
     
-    # Get comments for each post
+    # Add post_comments attribute for template compatibility
     for post in posts:
-        post.post_comments = Comment.objects.filter(post_id=post).order_by('created_at')
+        post.post_comments = post.comments.all()  # Use prefetched data
     
-    # Get suggested users (simple version)
+    # Get suggested users (optimized version)
     followed_users = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
-    suggestions = User.objects.exclude(id=request.user.id).exclude(id__in=followed_users)[:5]
+    suggestions = User.objects.select_related('profile').exclude(
+        id=request.user.id
+    ).exclude(id__in=followed_users)[:5]
 
-    return render(request, "index_simple.html", {
+    context_data = {
         "user_profile": user_profile, 
         "posts": posts, 
         "liked_post_ids": liked_post_ids,
         "suggestions": suggestions,
         "created_at": posts[0].created_at.strftime("%Y-%m-%d %H:%M:%S") if posts else None
-    })
+    }
+    
+    # Cache the data for 2 minutes
+    cache.set(cache_key, context_data, 60 * 2)
+    
+    return render(request, "index_simple.html", context_data)
 
 def signin(request):
     if request.method == "POST":
@@ -98,6 +119,15 @@ def upload(request):
         if caption or media_file:
             new_post = Post.objects.create(user=request.user, caption=caption, media=media_file)
             new_post.save()
+            
+            # Clear cache when new post is created
+            cache.delete(f'home_posts_{request.user.id}')
+            cache.delete(f'profile_{request.user.username}_{request.user.id}')
+            # Clear cache for all followers to see the new post
+            followers = Follow.objects.filter(following=request.user).values_list('follower', flat=True)
+            for follower_id in followers:
+                cache.delete(f'home_posts_{follower_id}')
+            
             messages.success(request, "Post uploaded successfully!")
         else:
             messages.error(request, "Please write something or select a file to upload.")
@@ -106,10 +136,19 @@ def upload(request):
     return render(request, "upload.html")
 
 @login_required(login_url='signin')
+@vary_on_cookie
+@cache_page(60 * 5)  # Cache for 5 minutes
 def profile(request, pk):
+    # Try to get from cache first
+    cache_key = f'profile_{pk}_{request.user.id}'
+    cached_data = cache.get(cache_key)
+    
+    if cached_data:
+        return render(request, "profile.html", cached_data)
+        
     try:
-        user_object = User.objects.get(username=pk)
-        user_profile = Profile.objects.get(user=user_object)
+        user_object = User.objects.select_related('profile').get(username=pk)
+        user_profile = user_object.profile
     except User.DoesNotExist:
         messages.error(request, f"User '{pk}' does not exist.")
         return redirect('home')
@@ -117,21 +156,20 @@ def profile(request, pk):
         messages.error(request, f"Profile for user '{pk}' does not exist.")
         return redirect('home')
     
-    # Get user's posts with comments and their users prefetched
-    posts = Post.objects.filter(user=user_object).prefetch_related(
-        'comments__username__profile',  # Prefetch comment authors and their profiles
-        'likes'  # Prefetch likes for efficiency
-    ).order_by('-created_at')
+    # Get user's posts with optimized queries
+    posts = Post.objects.filter(user=user_object).select_related('user').prefetch_related(
+        'comments__username__profile'  # Prefetch comments and their authors
+    ).order_by('-created_at')[:20]  # Limit posts for better performance
     
-    # Add comments to each post (for template compatibility)
+    # Add post_comments attribute for template compatibility
     for post in posts:
-        post.post_comments = Comment.objects.filter(post_id=post).order_by('created_at')
-
+        post.post_comments = post.comments.all()  # Use prefetched data
+    
     # Check if current user is following this user
     is_following = Follow.objects.filter(follower=request.user, following=user_object).exists()
     button_text = "Unfollow" if is_following else "Follow"
 
-    # Get counts
+    # Get counts efficiently
     post_length = posts.count()
     user_followers = Follow.objects.filter(following=user_object).count()
     user_following = Follow.objects.filter(follower=user_object).count()
@@ -149,6 +187,10 @@ def profile(request, pk):
         "button_text": button_text,
         "liked_post_ids": liked_post_ids,
     }
+    
+    # Cache the data for 5 minutes
+    cache.set(cache_key, context, 60 * 5)
+    
     return render(request, "profile.html", context)
 
 @login_required(login_url='signin')
@@ -185,16 +227,22 @@ def like_post(request):
         if liked:
             LikePost.objects.filter(post_id=post, username=request.user).delete()
             post.no_of_likes = max(0, post.no_of_likes - 1)
-            action = "unliked"
         else:
             LikePost.objects.create(post_id=post, username=request.user)
             post.no_of_likes += 1
-            action = "liked"
+        
         post.save()
         
-        return JsonResponse({"success": True, "no_of_likes": post.no_of_likes, "action": action})
+        # Clear cache when data changes
+        cache.delete(f'home_posts_{request.user.id}')
+        cache.delete(f'profile_{post.user.username}_{request.user.id}')
         
-    return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
+        return JsonResponse({
+            "success": True, 
+            "liked": not liked, 
+            "like_count": post.no_of_likes
+        })
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
 @login_required(login_url='signin')
 def comment(request):

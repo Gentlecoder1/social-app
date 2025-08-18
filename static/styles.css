@@ -1,56 +1,69 @@
+/* Optimized CSS with combined selectors and reduced redundancy */
 body {
   font-family: Segoe UI, system-ui, sans-serif;
   background-color: #f0f2f5;
 }
-.sidebar-item {
+
+/* Combined hover effects */
+.sidebar-item,
+.post-interaction {
   padding: 8px;
   margin: 2px 0;
   border-radius: 6px;
+  transition: background-color 0.2s ease;
 }
-.sidebar-item:hover {
+
+.sidebar-item:hover,
+.post-interaction:hover {
   background-color: #e4e6e9;
 }
-.active-dot {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 10px;
-  height: 10px;
-  background-color: #31a24c;
-  border-radius: 50%;
-  border: 2px solid white;
-}
+
 .post-interaction {
   color: #65676b;
   font-size: 15px;
   font-weight: 500;
   padding: 8px 0;
 }
-.post-interaction:hover {
-  background-color: #f0f2f5;
-  border-radius: 4px;
-}
-.comment-input {
+
+/* Shared input styles */
+.comment-input,
+.search-input {
   background-color: #f0f2f5;
   border-radius: 18px;
   font-size: 15px;
+  border: none;
+  outline: none;
 }
-#rightSidebar {
-  transform: translateX(100%);
+
+/* Sidebar animations - combined */
+#rightSidebar,
+#sidebar {
   transition: transform 0.3s ease;
 }
+
+#rightSidebar {
+  transform: translateX(100%);
+}
+
 #rightSidebar.show {
   transform: translateX(0);
 }
-#rightSidebarOverlay {
+
+/* Overlay styles - combined */
+#rightSidebarOverlay,
+#sidebarOverlay {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s;
 }
-#rightSidebarOverlay.show {
+
+#rightSidebarOverlay.show,
+#sidebarOverlay.show {
   opacity: 1;
   visibility: visible;
 }
+
+/* Media styles */
 .post-image,
 .post-video {
   width: 100%;

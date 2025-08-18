@@ -1,4 +1,17 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Page preloading for faster navigation
+  const prefetchPages = ["/search", "/profile/", "/settings"];
+
+  // Preload pages after initial load
+  setTimeout(() => {
+    prefetchPages.forEach((url) => {
+      const link = document.createElement("link");
+      link.rel = "prefetch";
+      link.href = url;
+      document.head.appendChild(link);
+    });
+  }, 2000);
+
   // Profile dropdown functionality
   const profileButton = document.getElementById("profileButton");
   const profileDropdown = document.getElementById("profileDropdown");

@@ -40,8 +40,16 @@ class Post(models.Model):
     caption = models.TextField()
     media = models.FileField(upload_to='post_media/', validators=[validate_media_file], null=True, blank=True)
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, blank=True, default="")
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)  # Add index for ordering
     no_of_likes = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['-created_at']  # Default ordering
+        indexes = [
+            models.Index(fields=['-created_at']),  # Index for timestamp ordering
+            models.Index(fields=['user']),  # Index for user queries
+            models.Index(fields=['user', '-created_at']),  # Composite index
+        ]
 
     def save(self, *args, **kwargs):
         """Automatically determine media type based on file extension"""
@@ -64,6 +72,14 @@ class LikePost(models.Model):
     post_id = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
     username = models.ForeignKey(User, on_delete=models.CASCADE, related_name='liked_by')
 
+    class Meta:
+        unique_together = ('post_id', 'username')  # Prevent duplicate likes
+        indexes = [
+            models.Index(fields=['post_id']),
+            models.Index(fields=['username']),
+            models.Index(fields=['post_id', 'username']),
+        ]
+
     def __str__(self):
         return self.username
 
@@ -71,7 +87,15 @@ class Comment(models.Model):
     post_id = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     username = models.ForeignKey(User, on_delete=models.CASCADE, related_name='commented_by')
     comment = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['created_at']  # Default ordering for comments
+        indexes = [
+            models.Index(fields=['post_id']),
+            models.Index(fields=['post_id', 'created_at']),
+            models.Index(fields=['username']),
+        ]
 
     def __str__(self):
         return f"{self.username} on {self.post_id}"
@@ -79,6 +103,14 @@ class Comment(models.Model):
 class Follow(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers')
+
+    class Meta:
+        unique_together = ('follower', 'following')  # Prevent duplicate follows
+        indexes = [
+            models.Index(fields=['follower']),
+            models.Index(fields=['following']),
+            models.Index(fields=['follower', 'following']),
+        ]
 
     def __str__(self):
         return f"{self.follower.username} follows {self.following.username}"

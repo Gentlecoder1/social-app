@@ -1,7 +1,8 @@
-{% load static %} {% load socials_extras %}
+{% load static %} {% load socials_extras %} {% load cache %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    {% cache 300 "homepage_head" %}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home</title>
@@ -12,6 +13,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <link rel="stylesheet" href="{% static 'styles.css' %}" />
+    {% endcache %}
   </head>
   <body class="flex flex-col">
     <!-- Main Header -->
@@ -505,7 +507,7 @@
                     <div
                       class="text-dark py-1 px-2 rounded-lg bg-gray-50 h-full relative lg:ml-5 ml-2 lg:mr-20"
                     >
-                      <p>
+                      <p class="flex justify-between">
                         <a
                           href="{% url 'profile' comment.username.username %}"
                           class="comment-username hover:text-blue-600 text-xs font-semibold"
