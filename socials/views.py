@@ -1,5 +1,5 @@
 from itertools import chain
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout as auth_logout
@@ -141,16 +141,18 @@ def upload(request):
     return render(request, "upload.html")
 
 @login_required(login_url='signin')
+def delete(request, post_id):
+    """Delete a post created by the user."""
+    if request.method == "POST":  
+        post = get_object_or_404(Post, id=post_id, user=request.user)
+        post.delete()
+        messages.success(request, "Post deleted successfully.")
+    return redirect('profile', pk=request.user.username)
+
+@login_required(login_url='signin')
 def profile(request, pk):
-    try:
-        user_object = User.objects.select_related('profile').get(username=pk)
-        user_profile = user_object.profile
-    except User.DoesNotExist:
-        messages.error(request, f"User '{pk}' does not exist.")
-        return redirect('home')
-    except Profile.DoesNotExist:
-        messages.error(request, f"Profile for user '{pk}' does not exist.")
-        return redirect('home')
+    user_object = get_object_or_404(User, username=pk)
+    user_profile, created = Profile.objects.get_or_create(user=user_object)
     
     # Get user's posts with optimized queries
     posts = Post.objects.filter(user=user_object).select_related('user').prefetch_related(

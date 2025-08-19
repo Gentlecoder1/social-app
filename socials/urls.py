@@ -9,10 +9,11 @@ urlpatterns = [
     path("logout", views.logout, name="logout"),
     path("profile/<str:pk>", views.profile, name="profile"),
     path("upload", views.upload, name="upload"),
+    path("delete/<uuid:post_id>", views.delete, name="delete"),
     path("like_post/", views.like_post, name="like_post"),
+    path("comment/", views.comment, name="comment"),
     path("settings", views.settings, name="settings"),
     path("search", views.search, name="search"),
     path("debug/users", views.debug_users, name="debug_users"),
-    path("comment/", views.comment, name="comment"),
     path("follow", views.follow, name="follow"),
 ]

@@ -235,7 +235,7 @@
                   </p>
                 </div>
               </div>
-              <!-- Working dropdown menu -->
+              <!-- Post dropdown menu -->
               <div class="relative">
                 <button
                   class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors post-menu-btn"
@@ -281,12 +281,20 @@
                     </li>
                     {% if user_object.username == user.username %}
                     <li>
-                      <a
-                        href="#"
-                        class="flex items-center px-3 py-2 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-md"
+                      <form
+                        method="POST"
+                        action="{% url 'delete' post.id %}"
+                        style="display: inline"
                       >
-                        <i class="fas fa-trash mr-2 text-xs"></i> Delete Post
-                      </a>
+                        {% csrf_token %}
+                        <button
+                          type="submit"
+                          class="flex items-center w-full px-3 py-2 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-md text-left"
+                          onclick="return confirm('Are you sure you want to delete this post?')"
+                        >
+                          <i class="fas fa-trash mr-2 text-xs"></i> Delete Post
+                        </button>
+                      </form>
                     </li>
                     {% endif %}
                   </ul>
