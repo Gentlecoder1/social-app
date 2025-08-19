@@ -6,25 +6,14 @@ from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib.auth.models import User
 from .models import Profile, Post, LikePost, Comment, Follow
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.cache import cache_page
-from django.core.cache import cache
-from django.views.decorators.vary import vary_on_cookie
+from django.core.exceptions import ValidationError
 import random
 
 #new home view
 @login_required(login_url='signin')
-@vary_on_cookie
-@cache_page(60 * 2)  # Cache for 2 minutes
 def new_home(request):
-    # Try to get from cache first
-    cache_key = f'home_posts_{request.user.id}'
-    cached_data = cache.get(cache_key)
-    
-    if cached_data:
-        return render(request, "index_simple.html", cached_data)
-    
-    # Get user profile
-    user_profile = Profile.objects.select_related('user').get(user=request.user)
+    # Get or create user profile (handles case where profile doesn't exist)
+    user_profile, created = Profile.objects.select_related('user').get_or_create(user=request.user)
 
     # Get posts with optimized queries using select_related and prefetch_related
     posts = Post.objects.exclude(user=request.user).select_related('user', 'user__profile').prefetch_related(
@@ -51,9 +40,6 @@ def new_home(request):
         "suggestions": suggestions,
         "created_at": posts[0].created_at.strftime("%Y-%m-%d %H:%M:%S") if posts else None
     }
-    
-    # Cache the data for 2 minutes
-    cache.set(cache_key, context_data, 60 * 2)
     
     return render(request, "index_simple.html", context_data)
 
@@ -111,41 +97,51 @@ def logout(request):
 @login_required(login_url='signin')
 def upload(request):
     if request.method == "POST":
+        print("DEBUG: Upload POST request received")
         user = request.user.username
-        caption = request.POST.get("caption")
+        caption = request.POST.get("caption", "").strip()
         media_file = request.FILES.get("image_upload") or request.FILES.get("video_upload")
+        
+        print(f"DEBUG: Caption: '{caption}'")
+        print(f"DEBUG: Media file: {media_file}")
+        print(f"DEBUG: request.FILES: {request.FILES}")
+
+        # Validate file size (12MB limit)
+        if media_file and media_file.size > 12 * 1024 * 1024:
+            messages.error(request, "File size too large. Please select a file smaller than 10MB.")
+            return redirect('new_home')
 
         # Check if there's content to post (caption or media)
         if caption or media_file:
-            new_post = Post.objects.create(user=request.user, caption=caption, media=media_file)
-            new_post.save()
-            
-            # Clear cache when new post is created
-            cache.delete(f'home_posts_{request.user.id}')
-            cache.delete(f'profile_{request.user.username}_{request.user.id}')
-            # Clear cache for all followers to see the new post
-            followers = Follow.objects.filter(following=request.user).values_list('follower', flat=True)
-            for follower_id in followers:
-                cache.delete(f'home_posts_{follower_id}')
-            
-            messages.success(request, "Post uploaded successfully!")
+            try:
+                new_post = Post.objects.create(
+                    user=request.user, 
+                    caption=caption, 
+                    media=media_file
+                )
+                print(f"DEBUG: Post created successfully. ID: {new_post.id}, Media: {new_post.media}")
+                
+                if media_file:
+                    messages.success(request, f"Post with {new_post.media_type} uploaded successfully!")
+                else:
+                    messages.success(request, "Post uploaded successfully!")
+                    
+            except ValidationError as e:
+                print(f"DEBUG: ValidationError: {str(e)}")
+                messages.error(request, f"Upload failed: {str(e)}")
+            except Exception as e:
+                print(f"DEBUG: Exception: {str(e)}")
+                messages.error(request, "An error occurred while uploading. Please try again.")
+                
         else:
+            print("DEBUG: No caption or media file provided")
             messages.error(request, "Please write something or select a file to upload.")
         
         return redirect('new_home')
     return render(request, "upload.html")
 
 @login_required(login_url='signin')
-@vary_on_cookie
-@cache_page(60 * 5)  # Cache for 5 minutes
 def profile(request, pk):
-    # Try to get from cache first
-    cache_key = f'profile_{pk}_{request.user.id}'
-    cached_data = cache.get(cache_key)
-    
-    if cached_data:
-        return render(request, "profile.html", cached_data)
-        
     try:
         user_object = User.objects.select_related('profile').get(username=pk)
         user_profile = user_object.profile
@@ -187,9 +183,6 @@ def profile(request, pk):
         "button_text": button_text,
         "liked_post_ids": liked_post_ids,
     }
-    
-    # Cache the data for 5 minutes
-    cache.set(cache_key, context, 60 * 5)
     
     return render(request, "profile.html", context)
 
@@ -233,10 +226,6 @@ def like_post(request):
         
         post.save()
         
-        # Clear cache when data changes
-        cache.delete(f'home_posts_{request.user.id}')
-        cache.delete(f'profile_{post.user.username}_{request.user.id}')
-        
         return JsonResponse({
             "success": True, 
             "liked": not liked, 
@@ -260,8 +249,8 @@ def comment(request):
 
         new_comment = Comment.objects.create(post_id=post, username=request.user, comment=comment_text.strip())
         
-        # Get user profile for response
-        user_profile = Profile.objects.get(user=request.user)
+        # Get or create user profile for response
+        user_profile, created = Profile.objects.get_or_create(user=request.user)
         
         # Return the comment data for AJAX response
         comment_data = {

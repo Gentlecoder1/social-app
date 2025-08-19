@@ -114,3 +114,23 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.follower.username} follows {self.following.username}"
+
+
+# Signal to automatically create profile when user is created
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Automatically create a Profile when a new User is created"""
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """Save the profile when user is saved"""
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
+    else:
+        # Create profile if it doesn't exist
+        Profile.objects.get_or_create(user=instance)

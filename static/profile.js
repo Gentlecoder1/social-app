@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Profile JavaScript loaded");
+  console.log("Profile page JavaScript loaded");
 
-  // Post menu dropdown functionality
+  // Post menu dropdown functionality (copied from home.js)
   document.addEventListener("click", function (e) {
     const menuBtn = e.target.closest(".post-menu-btn");
 
@@ -12,16 +12,13 @@ document.addEventListener("DOMContentLoaded", function () {
         `.post-menu[data-post-id="${postId}"]`
       );
 
-      if (menu) {
-        // Close all other menus
-        document.querySelectorAll(".post-menu").forEach((m) => {
-          if (m !== menu) m.classList.add("hidden");
-        });
+      // Close all other menus
+      document.querySelectorAll(".post-menu").forEach((m) => {
+        if (m !== menu) m.classList.add("hidden");
+      });
 
-        // Toggle current menu
-        menu.classList.toggle("hidden");
-        console.log("Menu toggled for post", postId);
-      }
+      // Toggle current menu
+      menu.classList.toggle("hidden");
     } else {
       // Close all menus when clicking outside
       document
@@ -30,134 +27,300 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Like button functionality
+  // Like button functionality (copied from home.js)
   document.querySelectorAll(".like-btn").forEach(function (button) {
-    console.log("Like button found:", button);
-
     // Set initial color based on data-liked attribute
     const isLiked = button.getAttribute("data-liked") === "True";
     button.style.color = isLiked ? "#5a7ad1" : "#65676b";
 
     button.addEventListener("click", function () {
-      console.log("Like button clicked");
       const postId = button.getAttribute("data-post-id");
       const csrfToken = document.querySelector(
         'input[name="csrfmiddlewaretoken"]'
-      );
-
-      if (!csrfToken) {
-        console.error("CSRF token not found");
-        return;
-      }
+      ).value;
 
       button.disabled = true;
       button.style.opacity = "0.6";
-
-      console.log("Sending like request for post", postId);
-
+      
       fetch("/like_post/", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          "X-CSRFToken": csrfToken.value,
+          "X-CSRFToken": csrfToken,
         },
         body: `post_id=${postId}`,
       })
-        .then((response) => {
-          console.log("Response received:", response);
-          return response.json();
-        })
+        .then((response) => response.json())
         .then((data) => {
-          console.log("Data received:", data);
           if (data.success) {
-            // Update like count
+            // Update like count - using the correct response field name
             const likeCountElement = document.querySelector(
               `.like-count[data-post-id="${postId}"]`
             );
             if (likeCountElement) {
-              likeCountElement.textContent = data.no_of_likes;
+              likeCountElement.textContent = data.like_count;
             }
+            
             // Update button color based on like status
-            if (data.action === "liked") {
+            if (data.liked) {
               button.style.color = "#5a7ad1"; // Blue when liked
               button.setAttribute("data-liked", "True");
             } else {
               button.style.color = "#65676b"; // Gray when not liked
               button.setAttribute("data-liked", "False");
             }
-          } else {
-            console.error("Like request failed:", data);
           }
           button.disabled = false;
           button.style.opacity = "1";
         })
         .catch((error) => {
-          console.error("Like request error:", error);
+          console.error("Like error:", error);
           button.disabled = false;
           button.style.opacity = "1";
         });
     });
   });
 
-  // Comment toggle functionality
-  document.addEventListener("click", function (e) {
-    const toggleBtn = e.target.closest(".comment-toggle-btn");
-    if (toggleBtn) {
-      e.preventDefault();
-      const postId = toggleBtn.getAttribute("data-post-id");
-      const commentsSection = document.querySelector(
-        `.comments-section[data-post-id="${postId}"]`
-      );
+  // Comment SECTION (copied from home.js)
+  const CommentHandler = {
+    cache: new Map(),
 
-      if (commentsSection) {
-        commentsSection.classList.toggle("hidden");
-        console.log("Comments toggled for post", postId);
+    init() {
+      // Single event delegation for better performance
+      document.addEventListener("click", this.handleClick.bind(this));
+      document.addEventListener("submit", this.handleSubmit.bind(this));
+      document.addEventListener("scroll", this.handleScroll.bind(this), {
+        passive: true,
+        capture: true,
+      });
+    },
+
+    handleClick(e) {
+      const toggleBtn = e.target.closest(".comment-toggle-btn");
+      if (toggleBtn) {
+        e.preventDefault();
+        this.toggleComments(toggleBtn);
       }
-    }
-  });
+    },
 
-  // Comment form submission
-  document.addEventListener("submit", function (e) {
-    if (e.target.matches(".comment-form")) {
-      e.preventDefault();
-      const form = e.target;
-      const postId = form.getAttribute("data-post-id");
-      const commentInput = form.querySelector('input[name="comment"]');
-      const csrfToken = form.querySelector('input[name="csrfmiddlewaretoken"]');
+    handleSubmit(e) {
+      if (e.target.matches(".comment-form")) {
+        e.preventDefault();
+        this.submitComment(e.target);
+      }
+    },
 
-      if (!commentInput.value.trim()) {
+    handleScroll(e) {
+      if (e.target.matches(".comments-scroll-container")) {
+        this.updateScrollFade(e.target);
+      }
+    },
+
+    getElements(postId) {
+      // Cache DOM queries
+      const cacheKey = `post-${postId}`;
+      if (this.cache.has(cacheKey)) {
+        return this.cache.get(cacheKey);
+      }
+
+      const elements = {
+        section: document.querySelector(
+          `[data-post-id="${postId}"].comments-section`
+        ),
+        container: document.querySelector(`#comments-container-${postId}`),
+        button: document.querySelector(
+          `[data-post-id="${postId}"].comment-toggle-btn`
+        ),
+        form: document.querySelector(`[data-post-id="${postId}"].comment-form`),
+      };
+
+      if (elements.section) {
+        elements.fadeOverlay = elements.section.querySelector(
+          ".comments-fade-overlay"
+        );
+        elements.scrollContainer = elements.section.querySelector(
+          ".comments-scroll-container"
+        );
+        elements.icon = elements.button?.querySelector(".comment-icon");
+      }
+
+      this.cache.set(cacheKey, elements);
+      return elements;
+    },
+
+    toggleComments(button) {
+      const postId = button.dataset.postId;
+      const elements = this.getElements(postId);
+
+      if (!elements.section) return;
+
+      const isHidden = elements.section.classList.contains("hidden");
+
+      if (isHidden) {
+        this.showComments(elements);
+      } else {
+        this.hideComments(elements);
+      }
+    },
+
+    showComments(elements) {
+      const { section, scrollContainer, fadeOverlay, icon } = elements;
+
+      section.classList.remove("hidden");
+
+      // Single RAF call
+      requestAnimationFrame(() => {
+        section.style.maxHeight = section.scrollHeight + "px";
+        section.style.opacity = "1";
+
+        if (icon) icon.style.color = "#1877f2";
+
+        // Check scroll after show
+        if (scrollContainer && fadeOverlay) {
+          setTimeout(() => this.updateScrollFade(scrollContainer), 100);
+        }
+      });
+    },
+
+    hideComments(elements) {
+      const { section, fadeOverlay, icon } = elements;
+
+      section.style.maxHeight = "0px";
+      section.style.opacity = "0";
+      fadeOverlay?.classList.remove("show-fade");
+
+      if (icon) icon.style.color = "#65676b";
+
+      setTimeout(() => section.classList.add("hidden"), 300);
+    },
+
+    updateScrollFade(container) {
+      const fadeOverlay = container.closest(".comments-fade-overlay");
+      if (!fadeOverlay) return;
+
+      const isScrollable = container.scrollHeight > container.clientHeight;
+      const isNearBottom =
+        container.scrollTop + container.clientHeight >=
+        container.scrollHeight - 10;
+
+      fadeOverlay.classList.toggle("show-fade", isScrollable && !isNearBottom);
+    },
+
+    async submitComment(form) {
+      const postId = form.dataset.postId;
+      const elements = this.getElements(postId);
+      const input = form.querySelector(`#comment-${postId}`);
+      const button = form.querySelector('[type="submit"]');
+      const text = input?.value.trim();
+
+      if (!text) {
+        alert("Please enter a comment");
         return;
       }
 
-      console.log("Submitting comment for post", postId);
+      // Loading state
+      if (button) {
+        button.disabled = true;
+        button.style.opacity = "0.6";
+      }
 
-      const formData = new FormData();
-      formData.append("post_id", postId);
-      formData.append("comment", commentInput.value);
-      formData.append("csrfmiddlewaretoken", csrfToken.value);
+      try {
+        const formData = new FormData(form);
+        // Get CSRF token
+        const csrfToken = document.querySelector(
+          "[name=csrfmiddlewaretoken]"
+        ).value;
 
-      fetch("/comment/", {
-        method: "POST",
-        body: formData,
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("Comment response:", data);
-          if (data.success) {
-            // Clear the input
-            commentInput.value = "";
-            // You could add the new comment to the DOM here
-            // For now, just log success
-            console.log("Comment added successfully");
-          } else {
-            console.error("Comment submission failed:", data);
-          }
-        })
-        .catch((error) => {
-          console.error("Comment submission error:", error);
+        const response = await fetch("/comment/", {
+          method: "POST",
+          body: formData,
+          headers: {
+            "X-CSRFToken": csrfToken,
+          },
         });
-    }
-  });
 
-  console.log("Profile JavaScript initialization complete");
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          input.value = "";
+          this.addComment(elements, data.comment);
+          this.ensureVisible(elements);
+        } else {
+          console.error("Server error:", data);
+          alert(data.error || "Failed to post comment");
+        }
+      } catch (error) {
+        console.error("Comment error:", error);
+        alert(
+          "Network error: Failed to post comment. Please check your connection and try again."
+        );
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.style.opacity = "1";
+        }
+      }
+    },
+
+    addComment(elements, comment) {
+      const { container } = elements;
+      if (!container) return;
+
+      // Remove no comments message
+      const noMsg = container.querySelector(".text-center.post-meta");
+      if (noMsg) noMsg.remove();
+
+      // Add comment with exact same structure as server-rendered comments
+      const html = `
+              <div class="flex comment-item px-4 py-3 bg-black">
+                <div class="w-10 h-10 rounded-full border-2 border-blue-600 relative flex-shrink-0">
+                  <img src="${
+                    comment.profile_pic ||
+                    "/media/profile_pics/blank-profile-picture.png"
+                  }" 
+                       alt="Profile Image" class="absolute h-full rounded-full w-full" />
+                </div>
+                <div class="text-dark py-2 px-3 rounded-lg bg-gray-50 h-full relative lg:ml-5 ml-2 lg:mr-20">
+                  <p class="leading-6 flex flex-col">
+                    <a href="/profile/${comment.username}">
+                      <strong class="comment-username">${
+                        comment.username
+                      }</strong>
+                    </a>
+                    <span class="comment-text">${comment.comment}</span>
+                  </p>
+                  <div class="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+                    <small class="comment-time text-xs text-gray-500">just now</small>
+                  </div>
+                </div>
+              </div>
+            `;
+
+      container.insertAdjacentHTML("beforeend", html);
+
+      // Scroll to new comment
+      setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+      }, 100);
+    },
+
+    ensureVisible(elements) {
+      const { section } = elements;
+      if (section?.classList.contains("hidden")) {
+        this.showComments(elements);
+      } else if (section) {
+        // Update height
+        requestAnimationFrame(() => {
+          section.style.maxHeight = section.scrollHeight + "px";
+        });
+      }
+    },
+  };
+
+  // Initialize optimized comment handler
+  CommentHandler.init();
 });

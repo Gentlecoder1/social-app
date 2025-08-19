@@ -1,19 +1,18 @@
-{% load static %} {% load socials_extras %} {% load cache %}
+{% load static %} {% load socials_extras %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    {% cache 300 "homepage_head" %}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="{% static 'home.js' %}?v=20250816"></script>
+    <script src="{% static 'home.js' %}?v=20250819"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <link rel="stylesheet" href="{% static 'styles.css' %}" />
-    {% endcache %}
+  </head>
   </head>
   <body class="flex flex-col">
     <!-- Main Header -->
@@ -232,7 +231,7 @@
           <div
             class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"
           >
-            <form action="upload" method="POST">
+            <form action="upload" method="POST" enctype="multipart/form-data">
               {% csrf_token %}
               <div class="p-4">
                 <div class="flex items-center">
@@ -526,7 +525,7 @@
                     </div>
                   </div>
                   {% empty %}
-                  <div class="text-center post-meta py-4">
+                  <div class="text-center post-meta py-4 text-white">
                     No comments yet. Be the first to comment!
                   </div>
                   {% endfor %}

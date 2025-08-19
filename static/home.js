@@ -45,8 +45,99 @@ document.addEventListener("DOMContentLoaded", function () {
       toggle.addEventListener("click", (e) => {
         e.stopPropagation(); // Prevent global click from hiding it immediately
         input.classList.toggle("hidden");
+
+        // Focus on input when shown
+        if (!input.classList.contains("hidden")) {
+          input.click();
+        }
+      });
+
+      // Add file change listener for preview
+      input.addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          handleFilePreview(file, inputId);
+          input.classList.add("hidden"); // Hide input after selection
+        }
       });
     }
+  }
+
+  // Function to handle file preview
+  function handleFilePreview(file, inputId) {
+    const previewContainer = document.getElementById("file-preview-container");
+    const captionTextarea = document.querySelector('textarea[name="caption"]');
+
+    if (!previewContainer) {
+      // Create preview container if it doesn't exist
+      const container = document.createElement("div");
+      container.id = "file-preview-container";
+      container.className = "mt-3 p-3 border rounded-lg bg-gray-50 relative";
+
+      // Insert after caption textarea
+      if (captionTextarea) {
+        captionTextarea.parentNode.insertBefore(
+          container,
+          captionTextarea.nextSibling
+        );
+      }
+    }
+
+    const container = document.getElementById("file-preview-container");
+
+    // Clear previous preview
+    container.innerHTML = "";
+
+    // Create preview based on file type
+    if (file.type.startsWith("image/")) {
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      img.className = "max-w-full max-h-48 rounded-lg";
+      img.onload = () => URL.revokeObjectURL(img.src);
+
+      const fileInfo = document.createElement("div");
+      fileInfo.className = "mt-2 text-sm text-gray-600";
+      fileInfo.textContent = `📷 ${file.name} (${(
+        file.size /
+        1024 /
+        1024
+      ).toFixed(2)} MB)`;
+
+      container.appendChild(img);
+      container.appendChild(fileInfo);
+    } else if (file.type.startsWith("video/")) {
+      const video = document.createElement("video");
+      video.src = URL.createObjectURL(file);
+      video.className = "max-w-full max-h-48 rounded-lg";
+      video.controls = true;
+      video.onload = () => URL.revokeObjectURL(video.src);
+
+      const fileInfo = document.createElement("div");
+      fileInfo.className = "mt-2 text-sm text-gray-600";
+      fileInfo.textContent = `🎥 ${file.name} (${(
+        file.size /
+        1024 /
+        1024
+      ).toFixed(2)} MB)`;
+
+      container.appendChild(video);
+      container.appendChild(fileInfo);
+    }
+
+    // Add remove button
+    const removeBtn = document.createElement("button");
+    removeBtn.innerHTML = "✕";
+    removeBtn.className =
+      "absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600";
+    removeBtn.type = "button";
+    removeBtn.onclick = function () {
+      container.remove();
+      // Clear the file input
+      document.getElementById(inputId).value = "";
+    };
+
+    container.appendChild(removeBtn);
+    container.style.display = "block";
   }
 
   // Set up toggles for photo and video (only if elements exist)
