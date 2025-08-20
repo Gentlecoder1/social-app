@@ -33,6 +33,20 @@ def create_notification(recipient, sender, notification_type, post=None, comment
         comment=comment
     )
 
+def create_post_notification(post):
+    """Create notification when a new post is created - notify followers."""
+    # Get all followers of the post author
+    followers = Follow.objects.filter(following=post.user).select_related('follower')
+    
+    # Create notifications for each follower
+    for follow_relationship in followers:
+        create_notification(
+            recipient=follow_relationship.follower,  # The follower gets notified
+            sender=post.user,                       # The post author is the sender
+            notification_type='post',
+            post=post
+        )
+
 def create_like_notification(post, user):
     """Create notification when someone likes a post."""
     create_notification(
@@ -207,6 +221,9 @@ def upload(request):
                     media=media_file
                 )
                 print(f"DEBUG: Post created successfully. ID: {new_post.id}, Media: {new_post.media}")
+                
+                # Create notifications for followers
+                create_post_notification(new_post)
                 
                 if media_file:
                     messages.success(request, f"Post with {new_post.media_type} uploaded successfully!")
@@ -450,49 +467,6 @@ def follow(request):
             return redirect('profile', pk=following)
 
     return redirect('profile', pk=following)
-
-@login_required(login_url='signin')
-def notifications(request):
-    """Display user notifications."""
-    user_profile, created = Profile.objects.get_or_create(user=request.user)
-    
-    # Get unread notifications first (before slicing)
-    unread_notifications = Notification.objects.filter(
-        recipient=request.user,
-        is_read=False
-    )
-    
-    # Mark unread notifications as read when viewed
-    unread_notifications.update(is_read=True)
-    
-    # Get all notifications for the current user (after marking as read)
-    user_notifications = Notification.objects.filter(
-        recipient=request.user
-    ).select_related('sender', 'post', 'comment').order_by('-created_at')[:50]
-    
-    # Get unread count for badge (should be 0 now since we just marked them as read)
-    unread_count = Notification.objects.filter(
-        recipient=request.user,
-        is_read=False
-    ).count()
-    
-    context = {
-        'user_profile': user_profile,
-        'notifications': user_notifications,
-        'unread_count': unread_count,
-    }
-    
-    return render(request, 'notifications.html', context)
-
-@login_required(login_url='signin')
-def get_unread_notifications_count(request):
-    """AJAX endpoint to get unread notifications count."""
-    count = Notification.objects.filter(
-        recipient=request.user,
-        is_read=False
-    ).count()
-    
-    return JsonResponse({'count': count})
 
 @login_required(login_url='signin')
 def delete_notification(request, notification_id):

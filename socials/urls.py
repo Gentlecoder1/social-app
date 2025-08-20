@@ -16,7 +16,5 @@ urlpatterns = [
     path("search", views.search, name="search"),
     path("debug/users", views.debug_users, name="debug_users"),
     path("follow", views.follow, name="follow"),
-    path("notifications/", views.notifications, name="notifications"),
-    path("notifications/count/", views.get_unread_notifications_count, name="notifications_count"),
     path("notifications/delete/<int:notification_id>/", views.delete_notification, name="delete_notification"),
 ]
