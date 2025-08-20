@@ -307,10 +307,11 @@ document.addEventListener("DOMContentLoaded", function () {
               `.like-count[data-post-id="${postId}"]`
             );
             if (likeCountElement) {
-              likeCountElement.textContent = data.no_of_likes;
+              likeCountElement.textContent = data.like_count; // Fixed: was data.no_of_likes
             }
             // Update button color based on like status
-            if (data.action === "liked") {
+            if (data.liked) {
+              // Fixed: was data.action === "liked"
               button.style.color = "#5a7ad1"; // Blue when liked
               button.setAttribute("data-liked", "True");
             } else {
@@ -548,6 +549,21 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
 
       container.insertAdjacentHTML("beforeend", html);
+
+      // Update comment count
+      const postId = container.closest("[data-post-id]")?.dataset.postId;
+      if (postId) {
+        const commentCountElement = document.querySelector(
+          `.comment-count[data-post-id="${postId}"]`
+        );
+        if (commentCountElement) {
+          const currentCount = parseInt(
+            commentCountElement.textContent.match(/\d+/)?.[0] || 0
+          );
+          const newCount = currentCount + 1;
+          commentCountElement.textContent = `${newCount} comments`;
+        }
+      }
 
       // Scroll to new comment
       setTimeout(() => {

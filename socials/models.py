@@ -158,23 +158,5 @@ class Notification(models.Model):
         # Prevent duplicate notifications for the same action
         unique_together = ['recipient', 'sender', 'notification_type', 'post']
     
-    def get_message(self):
-        """Generate unique message based on notification type"""
-        if self.notification_type == 'like':
-            return f"{self.sender.username} liked your post"
-        elif self.notification_type == 'unlike':
-            return f"{self.sender.username} unliked your post"
-        elif self.notification_type == 'comment':
-            comment_preview = self.comment.comment[:30] + "..." if self.comment and len(self.comment.comment) > 30 else self.comment.comment if self.comment else ""
-            return f"{self.sender.username} commented on your post: \"{comment_preview}\""
-        elif self.notification_type == 'follow':
-            return f"{self.sender.username} started following you"
-        elif self.notification_type == 'unfollow':
-            return f"{self.sender.username} unfollowed you"
-        elif self.notification_type == 'post':
-            return f"{self.sender.username} shared a new post"
-        else:
-            return f"{self.sender.username} performed an action"
-    
     def __str__(self):
         return f"{self.sender.username} -> {self.recipient.username}: {self.notification_type}"

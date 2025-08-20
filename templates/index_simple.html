@@ -388,7 +388,7 @@
               </div>
               <!-- no of comments -->
               <div>
-                <span class="mr-3">{{ post.comments.count }} comments</span>
+                <span class="comment-count mr-3" data-post-id="{{ post.id }}">{{ post.comments.count }} comments</span>
               </div>
 
               <!-- download media -->
@@ -547,10 +547,14 @@
                   <span class="font-semibold text-black">{{ notification.sender.username }}</span>
                   {% if notification.notification_type == 'like' %}
                   <span class="text-red-600">liked</span> your post
+                  {% elif notification.notification_type == 'unlike' %}
+                  <span class="text-red-600">unliked</span> your post
                   {% elif notification.notification_type == 'comment' %}
                   <span class="text-blue-600">commented</span> on your post
                   {% elif notification.notification_type == 'follow' %}
                   <span class="text-green-600">started following</span> you
+                  {% elif notification.notification_type == 'unfollow' %}
+                  <span class="text-green-600">stopped following</span> you
                   {% elif notification.notification_type == 'post' %}
                   <span class="text-purple-600">shared</span> a new post
                   {% endif %}
