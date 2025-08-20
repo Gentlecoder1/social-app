@@ -571,3 +571,47 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initialize optimized comment handler
   CommentHandler.init();
 });
+
+// Delete notification function
+function deleteNotification(notificationId) {
+  if (confirm("Are you sure you want to delete this notification?")) {
+    // Get CSRF token from the first form on the page
+    const csrfToken = document.querySelector(
+      'input[name="csrfmiddlewaretoken"]'
+    )?.value;
+
+    if (!csrfToken) {
+      alert("Security token not found. Please refresh the page and try again.");
+      return;
+    }
+
+    // Make AJAX request
+    fetch(`/notifications/delete/${notificationId}/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": csrfToken,
+      },
+    })
+      .then((response) => {
+        if (response.ok) {
+          // Remove the notification element from the DOM with animation
+          const notificationElement = document.querySelector(
+            `[data-notification-id="${notificationId}"]`
+          );
+          if (notificationElement) {
+            notificationElement.style.transition = "opacity 0.3s ease";
+            notificationElement.style.opacity = "0";
+            setTimeout(() => {
+              notificationElement.remove();
+            }, 300);
+          }
+        } else {
+          alert("Failed to delete notification. Please try again.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting notification:", error);
+        alert("Failed to delete notification. Please try again.");
+      });
+  }
+}
