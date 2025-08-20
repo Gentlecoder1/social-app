@@ -52,14 +52,15 @@
 
         <!-- notification and profile -->
         <div class="flex items-center space-x-4">
-          <!-- Notification Button - Smaller on mobile, positioned where search was -->
+          <!-- Notification Sidebar Toggle Button -->
           <div class="relative">
             <button
               id="headerNotificationToggle"
               class="text-gray-600 hover:text-blue-500 p-2 rounded-full relative md:p-2"
+              title="Toggle Notifications Sidebar"
             >
               <i class="fas fa-bell text-lg md:text-xl"></i>
-              <span class="notification-badge">3</span>
+              <span class="notification-count-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
             </button>
           </div>
 
@@ -134,10 +135,6 @@
                 ></i>
                 <span>Friends</span>
               </li>
-              <li class="sidebar-item flex items-center cursor-pointer">
-                <i class="fas fa-users w-[36px] text-[20px] text-[#1b74e4]"></i>
-                <span>Groups</span>
-              </li>
               <a href="search">
                 <li class="sidebar-item flex items-center cursor-pointer">
                   <i
@@ -152,67 +149,7 @@
                 ></i>
                 <span>Saved</span>
               </li>
-              <li class="sidebar-item flex items-center cursor-pointer">
-                <i class="fas fa-flag w-[36px] text-[20px] text-[#1b74e4]"></i>
-                <span>Pages</span>
-              </li>
-              <li class="sidebar-item flex items-center cursor-pointer">
-                <i class="fas fa-star w-[36px] text-[20px] text-[#1b74e4]"></i>
-                <span>Favourites</span>
-              </li>
-            </ul>
-            <p
-              class="text-[#1877f2] mt-1 cursor-pointer hover:underline pl-[44px] text-[15px]"
-            >
-              See More
-            </p>
-          </div>
-
-          <div class="mb-6">
-            <h2 class="text-[17px] font-semibold text-[#65676b] mb-2 pl-2">
-              My Group
-            </h2>
-            <ul>
-              <li class="sidebar-item flex items-center cursor-pointer">
-                <div
-                  class="w-[36px] h-[36px] rounded-md bg-[#e4e6eb] flex items-center justify-center mr-2"
-                >
-                  <i class="fas fa-users text-[16px] text-[#1b74e4]"></i>
-                </div>
-                <span>The Nerd Head</span>
-              </li>
-              <li class="sidebar-item flex items-center cursor-pointer">
-                <div
-                  class="w-[36px] h-[36px] rounded-md bg-[#e4e6eb] flex items-center justify-center mr-2"
-                >
-                  <i class="fas fa-users text-[16px] text-[#1b74e4]"></i>
-                </div>
-                <span>Take a Trip</span>
-              </li>
-              <li class="sidebar-item flex items-center cursor-pointer">
-                <div
-                  class="w-[36px] h-[36px] rounded-md bg-[#e4e6eb] flex items-center justify-center mr-2"
-                >
-                  <i class="fas fa-users text-[16px] text-[#1b74e4]"></i>
-                </div>
-                <span>Papa Ki Pari</span>
-              </li>
-              <li class="sidebar-item flex items-center cursor-pointer">
-                <div
-                  class="w-[36px] h-[36px] rounded-md bg-[#e4e6eb] flex items-center justify-center mr-2"
-                >
-                  <i class="fas fa-users text-[16px] text-[#1b74e4]"></i>
-                </div>
-                <span>College Friends</span>
-              </li>
-              <li class="sidebar-item flex items-center cursor-pointer">
-                <div
-                  class="w-[36px] h-[36px] rounded-md bg-[#e4e6eb] flex items-center justify-center mr-2"
-                >
-                  <i class="fas fa-users text-[16px] text-[#1b74e4]"></i>
-                </div>
-                <span>My Dream House</span>
-              </li>
+              
             </ul>
           </div>
         </div>
@@ -576,53 +513,48 @@
           </button>
         </div>
 
-        <!-- Birthdays -->
+        <!-- Notifications -->
         <div class="mb-6">
           <h3 class="font-semibold mb-3 text-[17px] text-[#65676b]">
-            Birthdays
+            Recent Activity
           </h3>
-          <div class="flex items-center">
-            <div
-              class="w-[40px] h-[40px] rounded-full bg-[#e4e6eb] flex items-center justify-center mr-3"
-            >
-              <i class="fas fa-birthday-cake text-[#f3425f]"></i>
+          <div class="space-y-3">
+            {% for notification in notifications %}
+            <div class="flex items-start space-x-3 p-2 rounded hover:bg-gray-50 {% if not notification.is_read %}bg-blue-50{% endif %}">
+              <!-- User Profile Picture -->
+              <div class="flex-shrink-0">
+                <img
+                  src="{% if notification.sender.profile.profilepic and notification.sender.profile.profilepic.url %}{{ notification.sender.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                  class="w-8 h-8 rounded-full object-cover"
+                  alt="{{ notification.sender.username }}"
+                />
+              </div>
+              
+              <!-- Notification Content -->
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-gray-900">
+                  <span class="font-semibold text-blue-600">{{ notification.sender.username }}</span>
+                  {% if notification.notification_type == 'like' %}
+                  <span class="text-red-600">liked</span> your post
+                  {% elif notification.notification_type == 'comment' %}
+                  <span class="text-blue-600">commented</span> on your post
+                  {% elif notification.notification_type == 'follow' %}
+                  <span class="text-green-600">started following</span> you
+                  {% elif notification.notification_type == 'post' %}
+                  <span class="text-purple-600">shared</span> a new post
+                  {% endif %}
+                </p>
+                <p class="text-xs text-gray-500 mt-1">{{ notification.created_at|timesince }} ago</p>
+              </div>
             </div>
-            <p class="text-[15px]">
-              Pola Foster and 3 other friends have birthday today
-            </p>
+            {% empty %}
+            <div class="text-center py-4">
+              <p class="text-gray-500 text-sm">No notifications yet</p>
+            </div>
+            {% endfor %}
           </div>
         </div>
 
-        <!-- Latest Activity -->
-        <div class="mb-6">
-          <h3 class="font-semibold mb-3 text-[17px] text-[#65676b]">
-            Latest Activity
-          </h3>
-          <div class="flex items-start mb-3">
-            <div
-              class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
-            >
-              <i class="fas fa-user text-gray-500"></i>
-            </div>
-            <div>
-              <p class="text-[15px]">
-                Halfly Harald Gomes added a photo in Talk.js
-              </p>
-              <p class="text-[#65676b] text-[13px]">about an hour ago</p>
-            </div>
-          </div>
-          <div class="flex items-start">
-            <div
-              class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
-            >
-              <i class="fas fa-user text-gray-500"></i>
-            </div>
-            <div>
-              <p class="text-[15px]">Alex kai sent you a friend request</p>
-              <p class="text-[#65676b] text-[13px]">3 hours ago</p>
-            </div>
-          </div>
-        </div>
 
         <!-- Active Friends -->
         <div>
@@ -654,5 +586,31 @@
         </div>
       </div>
     </div>
+
+    <script>
+      // Function to update notification count
+      function updateNotificationCount() {
+        fetch('{% url "notifications_count" %}')
+          .then(response => response.json())
+          .then(data => {
+            const badges = document.querySelectorAll('.notification-count-badge');
+            badges.forEach(badge => {
+              badge.textContent = data.count;
+              if (data.count > 0) {
+                badge.style.display = 'block';
+              } else {
+                badge.style.display = 'none';
+              }
+            });
+          })
+          .catch(error => console.error('Error fetching notification count:', error));
+      }
+
+      // Update notification count on page load
+      document.addEventListener('DOMContentLoaded', updateNotificationCount);
+
+      // Update notification count every 30 seconds
+      setInterval(updateNotificationCount, 30000);
+    </script>
   </body>
 </html>

@@ -134,3 +134,47 @@ def save_user_profile(sender, instance, **kwargs):
     else:
         # Create profile if it doesn't exist
         Profile.objects.get_or_create(user=instance)
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('like', 'Like'),
+        ('unlike', 'Unlike'),
+        ('comment', 'Comment'),
+        ('follow', 'Follow'),
+        ('unfollow', 'Unfollow'),
+        ('post', 'New Post'),
+    ]
+    
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        # Prevent duplicate notifications for the same action
+        unique_together = ['recipient', 'sender', 'notification_type', 'post']
+    
+    def get_message(self):
+        """Generate unique message based on notification type"""
+        if self.notification_type == 'like':
+            return f"{self.sender.username} liked your post"
+        elif self.notification_type == 'unlike':
+            return f"{self.sender.username} unliked your post"
+        elif self.notification_type == 'comment':
+            comment_preview = self.comment.comment[:30] + "..." if self.comment and len(self.comment.comment) > 30 else self.comment.comment if self.comment else ""
+            return f"{self.sender.username} commented on your post: \"{comment_preview}\""
+        elif self.notification_type == 'follow':
+            return f"{self.sender.username} started following you"
+        elif self.notification_type == 'unfollow':
+            return f"{self.sender.username} unfollowed you"
+        elif self.notification_type == 'post':
+            return f"{self.sender.username} shared a new post"
+        else:
+            return f"{self.sender.username} performed an action"
+    
+    def __str__(self):
+        return f"{self.sender.username} -> {self.recipient.username}: {self.notification_type}"

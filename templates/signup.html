@@ -55,15 +55,15 @@
           </div>
 
           <!-- Error Messages -->
-          {% if messages %}
+          {% if signup_errors %}
           <div class="mb-6">
-            {% for message in messages %}
+            {% for error in signup_errors %}
             <div
-              class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
+              class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-2"
             >
               <div class="flex items-center">
                 <i class="fas fa-exclamation-circle mr-2"></i>
-                <span class="text-sm">{{ message }}</span>
+                <span class="text-sm">{{ error }}</span>
               </div>
             </div>
             {% endfor %}

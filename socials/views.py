@@ -4,10 +4,78 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib.auth.models import User
-from .models import Profile, Post, LikePost, Comment, Follow
+from .models import Profile, Post, LikePost, Comment, Follow, Notification
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 import random
+
+# Notification Helper Functions
+def create_notification(recipient, sender, notification_type, post=None, comment=None):
+    """Create a notification with automatic duplicate prevention."""
+    if recipient == sender:
+        return  # Don't notify users about their own actions
+    
+    # Remove existing notification of the same type for the same post (if applicable)
+    if post:
+        Notification.objects.filter(
+            recipient=recipient,
+            sender=sender,
+            notification_type=notification_type,
+            post=post
+        ).delete()
+    
+    # Create new notification
+    Notification.objects.create(
+        recipient=recipient,
+        sender=sender,
+        notification_type=notification_type,
+        post=post,
+        comment=comment
+    )
+
+def create_like_notification(post, user):
+    """Create notification when someone likes a post."""
+    create_notification(
+        recipient=post.user,
+        sender=user,
+        notification_type='like',
+        post=post
+    )
+
+def create_unlike_notification(post, user):
+    """Create notification when someone unlikes a post."""
+    create_notification(
+        recipient=post.user,
+        sender=user,
+        notification_type='unlike',
+        post=post
+    )
+
+def create_comment_notification(post, user, comment):
+    """Create notification when someone comments on a post."""
+    create_notification(
+        recipient=post.user,
+        sender=user,
+        notification_type='comment',
+        post=post,
+        comment=comment
+    )
+
+def create_follow_notification(following_user, follower_user):
+    """Create notification when someone follows a user."""
+    create_notification(
+        recipient=following_user,
+        sender=follower_user,
+        notification_type='follow'
+    )
+
+def create_unfollow_notification(following_user, follower_user):
+    """Create notification when someone unfollows a user."""
+    create_notification(
+        recipient=following_user,
+        sender=follower_user,
+        notification_type='unfollow'
+    )
 
 #new home view
 @login_required(login_url='signin')
@@ -33,23 +101,32 @@ def new_home(request):
         id=request.user.id
     ).exclude(id__in=followed_users)[:5]
 
+    # Get recent notifications for the sidebar
+    notifications = Notification.objects.filter(
+        recipient=request.user
+    ).select_related('sender', 'sender__profile', 'post').order_by('-created_at')[:10]
+
     context_data = {
         "user_profile": user_profile, 
         "posts": posts, 
         "liked_post_ids": liked_post_ids,
         "suggestions": suggestions,
+        "notifications": notifications,
         "created_at": posts[0].created_at.strftime("%Y-%m-%d %H:%M:%S") if posts else None
     }
     
     return render(request, "index_simple.html", context_data)
 
 def signin(request):
+    signin_errors = []
+    
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
         
         if not username or not password:
-            return render(request, "signin.html", {"messages": ["Username and password are required."]})
+            signin_errors.append("Username and password are required.")
+            return render(request, "signin.html", {"signin_errors": signin_errors})
         
         user = authenticate(request, username=username, password=password)
         if user is not None:
@@ -59,11 +136,15 @@ def signin(request):
             else:
                 return redirect('settings')
         else:
-            return render(request, "signin.html", {"messages": ["Invalid login details."]})
+            signin_errors.append("Invalid login details.")
+            return render(request, "signin.html", {"signin_errors": signin_errors})
     
     return render(request, "signin.html")
 
 def signup(request): 
+    signup_errors = []
+    signup_success = []
+    
     if request.method == "POST":
         username = request.POST.get("username")
         email = request.POST.get("email")
@@ -71,9 +152,16 @@ def signup(request):
         password2 = request.POST.get("password2")
         
         if User.objects.filter(username=username).exists():
-            return render(request, "signup.html", {"messages": ["Username already exists."]})
+            signup_errors.append("Username already exists.")
+            return render(request, "signup.html", {"signup_errors": signup_errors})
         if User.objects.filter(email=email).exists():
-            return render(request, "signup.html", {"messages": ["Email already exists."]})
+            signup_errors.append("Email already exists.")
+            return render(request, "signup.html", {"signup_errors": signup_errors})
+        if password != password2:
+            signup_errors.append("Passwords do not match.")
+            return render(request, "signup.html", {"signup_errors": signup_errors})
+        
+        # All validations passed
         if password == password2:
             user = User.objects.create_user(username=username, email=email, password=password)
             user.save()
@@ -83,10 +171,9 @@ def signup(request):
             login(request, user_login)
 
             Profile.objects.create(user=user)
-            messages.success(request, f"User {username} signed up successfully!")
-            return redirect("signin")
-        else:
-            return render(request, "signup.html", {"error": "Passwords do not match."})
+            signup_success.append(f"Account created successfully! Welcome {username}!")
+            return render(request, "signin.html", {"signup_success": signup_success})
+            
     return render(request, "signup.html")
 
 @login_required(login_url='signin')
@@ -220,11 +307,19 @@ def like_post(request):
             
         liked = LikePost.objects.filter(post_id=post, username=request.user).exists()
         if liked:
+            # Unlike the post
             LikePost.objects.filter(post_id=post, username=request.user).delete()
             post.no_of_likes = max(0, post.no_of_likes - 1)
+            
+            # Create unlike notification
+            create_unlike_notification(post, request.user)
         else:
+            # Like the post
             LikePost.objects.create(post_id=post, username=request.user)
             post.no_of_likes += 1
+            
+            # Create like notification
+            create_like_notification(post, request.user)
         
         post.save()
         
@@ -250,6 +345,9 @@ def comment(request):
             return JsonResponse({"success": False, "error": "Post not found"}, status=404)
 
         new_comment = Comment.objects.create(post_id=post, username=request.user, comment=comment_text.strip())
+        
+        # Create comment notification
+        create_comment_notification(post, request.user, new_comment)
         
         # Get or create user profile for response
         user_profile, created = Profile.objects.get_or_create(user=request.user)
@@ -327,16 +425,71 @@ def follow(request):
         following = request.POST.get("following")
         follower = request.POST.get("follower")
 
+        following_user = User.objects.get(username=following)
+        follower_user = User.objects.get(username=follower)
+
         if not Follow.objects.filter(follower__username=follower, following__username=following).exists():
+            # Follow the user
             engage, created = Follow.objects.get_or_create(
-                follower=User.objects.get(username=follower),
-                following=User.objects.get(username=following)
+                follower=follower_user,
+                following=following_user
             )
-            # No need to call save() since get_or_create already saves the object
+            
+            # Create follow notification
+            create_follow_notification(following_user, follower_user)
+            
             return redirect('profile', pk=following)
         else:
+            # Unfollow the user
             disengage = Follow.objects.filter(follower__username=follower, following__username=following)
             disengage.delete()
+            
+            # Create unfollow notification
+            create_unfollow_notification(following_user, follower_user)
+            
             return redirect('profile', pk=following)
 
     return redirect('profile', pk=following)
+
+@login_required(login_url='signin')
+def notifications(request):
+    """Display user notifications."""
+    user_profile, created = Profile.objects.get_or_create(user=request.user)
+    
+    # Get unread notifications first (before slicing)
+    unread_notifications = Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    )
+    
+    # Mark unread notifications as read when viewed
+    unread_notifications.update(is_read=True)
+    
+    # Get all notifications for the current user (after marking as read)
+    user_notifications = Notification.objects.filter(
+        recipient=request.user
+    ).select_related('sender', 'post', 'comment').order_by('-created_at')[:50]
+    
+    # Get unread count for badge (should be 0 now since we just marked them as read)
+    unread_count = Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    ).count()
+    
+    context = {
+        'user_profile': user_profile,
+        'notifications': user_notifications,
+        'unread_count': unread_count,
+    }
+    
+    return render(request, 'notifications.html', context)
+
+@login_required(login_url='signin')
+def get_unread_notifications_count(request):
+    """AJAX endpoint to get unread notifications count."""
+    count = Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    ).count()
+    
+    return JsonResponse({'unread_count': count})

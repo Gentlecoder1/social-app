@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Post, LikePost, Comment, Follow
+from .models import Profile, Post, LikePost, Comment, Follow, Notification
 
 # Profile Admin
 @admin.register(Profile)
@@ -62,3 +62,12 @@ class FollowAdmin(admin.ModelAdmin):
     def relationship_info(self, obj):
         return f"{obj.follower.username} → {obj.following.username}"
     relationship_info.short_description = 'Relationship'
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('recipient', 'sender', 'notification_type', 'created_at')
+    list_filter = ('created_at', 'notification_type')
+    search_fields = ('recipient__username', 'sender__username', 'notification_type')
+    readonly_fields = ('created_at',)
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
