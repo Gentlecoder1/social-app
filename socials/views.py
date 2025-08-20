@@ -492,4 +492,20 @@ def get_unread_notifications_count(request):
         is_read=False
     ).count()
     
-    return JsonResponse({'unread_count': count})
+    return JsonResponse({'count': count})
+
+@login_required(login_url='signin')
+def delete_notification(request, notification_id):
+    """Delete a specific notification."""
+    if request.method == 'POST':
+        try:
+            notification = Notification.objects.get(
+                id=notification_id,
+                recipient=request.user  # Ensure user can only delete their own notifications
+            )
+            notification.delete()
+            return JsonResponse({'success': True, 'message': 'Notification deleted successfully.'})
+        except Notification.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Notification not found.'}, status=404)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=405)
