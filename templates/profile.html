@@ -9,7 +9,7 @@
 <!-- block -->
 {% block content %}
 <!-- Main Content -->
-    <main class="-pt-2">
+    <main class="-mt-4">
       <!-- Profile Header -->
       <div class="profile-header w-full h-[400px]">
         {% if user_profile.cover_photo and user_profile.cover_photo.url %}
@@ -46,6 +46,7 @@
           </div>
         </div>
         {% endif %}
+        <!-- Profile Avatar -->
         <div class="profile-avatar">
           <a href="{{ user_profile.profilepic.url }}">
             <img
@@ -58,7 +59,7 @@
       </div>
 
       <!-- Profile Details -->
-      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-12">
+      <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-12">
         <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="space-y-4">
             <div>
@@ -146,7 +147,7 @@
       </div>
 
       <!-- Posts Section -->
-      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-xl font-semibold text-gray-800">
             Posts ({{post_length}})

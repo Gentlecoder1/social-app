@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
       container.appendChild(fileInfo);
     }
 
-    // Add remove button
+    // Add remove button to clear file preview
     const removeBtn = document.createElement("button");
     removeBtn.innerHTML = "✕";
     removeBtn.className =

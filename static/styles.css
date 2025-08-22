@@ -63,15 +63,6 @@ body {
   visibility: visible;
 }
 
-/* Media styles */
-.post-image,
-.post-video {
-  width: 100%;
-  border-radius: 8px;
-  margin-top: 12px;
-  max-height: 500px;
-  object-fit: cover;
-}
 .search-input {
   background-color: #f0f2f5;
   border-radius: 50px;
@@ -82,21 +73,6 @@ body {
   outline: none;
   background-color: white;
   box-shadow: 0 0 0 2px #e7f3ff;
-}
-.notification-badge {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 16px;
-  height: 16px;
-  background-color: #f3425f;
-  border-radius: 50%;
-  border: 2px solid white;
-  color: white;
-  font-size: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 #sidebar {
   transform: translateX(-100%);
@@ -119,12 +95,12 @@ body {
     transform: translateX(0);
   }
   #rightSidebar {
-    width: 360px;
+    width: 390px;
   }
 }
 @media (max-width: 767px) {
   #rightSidebar {
-    width: 100%;
+    width: 60%;
   }
   .notification-icon {
     display: block;
@@ -148,6 +124,7 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* followers and following */
 .stat-card {
   background: rgba(255, 255, 255, 0.9);
   border-radius: 12px;
@@ -155,7 +132,7 @@ body {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-/* Post interaction styles */
+/* Post interaction styles for the engagement buttons */
 .post-interaction {
   color: #65676b;
   font-size: 13px;
