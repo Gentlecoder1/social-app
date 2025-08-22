@@ -1,12 +1,12 @@
-{# prettier ignore-start #} 
-{% extends "layout.html" %} 
+{# prettier ignore-start #} {% extends "layout.html" %} 
 
-{% load static %} 
+<!-- extra -->
+{% load static %} {% load socials_extras %} 
 
-{% load socials_extras %} 
-
+<!-- title -->
 {% block title %} Social Book - Home {% endblock %} 
 
+<!-- block -->
 {% block content %}
 <!-- Main Content -->
 <div class="flex-1 pt-4">
@@ -344,6 +344,4 @@
     {% endfor %}
   </div>
 </div>
-{% endblock %} 
-
-{# prettier ignore-end #}
+{% endblock %} {# prettier ignore-end #}

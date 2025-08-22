@@ -214,19 +214,19 @@
                   >
                   <!-- like Content -->
                   {% if notification.notification_type == 'like' %}
-                  <span class="text-red-600">liked</span> your post 
+                  <span class="text-red-600">liked</span> your post
                   <!-- unlike Content -->
                   {% elif notification.notification_type == 'unlike' %}
-                  <span class="text-red-600">unliked</span> your post 
+                  <span class="text-red-600">unliked</span> your post
                   <!-- comment Content -->
                   {% elif notification.notification_type == 'comment' %}
-                  <span class="text-blue-600">commented</span> on your post 
+                  <span class="text-blue-600">commented</span> on your post
                   <!-- follow Content -->
                   {% elif notification.notification_type == 'follow' %}
-                  <span class="text-green-600">started following</span> you 
+                  <span class="text-green-600">started following</span> you
                   <!-- unfollow Content -->
                   {% elif notification.notification_type == 'unfollow' %}
-                  <span class="text-green-600">stopped following</span> you 
+                  <span class="text-green-600">stopped following</span> you
                   <!-- newpost Content -->
                   {% elif notification.notification_type == 'post' %}
                   <span class="text-purple-600">shared</span> a new post

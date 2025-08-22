@@ -1,435 +1,171 @@
-{% load static %}
-<!-- Load template extensions -->
-{% load socials_extras %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Search - Social Book</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="{% static 'home.js' %}?v=20250819"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="{% static 'styles.css' %}" />
-  </head>
-  <body class="flex flex-col">
-    <!-- Main Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-30">
-      <div
-        class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between"
-      >
-        <div class="flex items-center">
-          <!-- Hamburger menu for mobile -->
-          <button id="sidebarToggle" class="mr-2 md:hidden text-gray-600">
-            <i class="fas fa-bars text-xl"></i>
-          </button>
-          <h1 class="text-2xl font-bold text-blue-600 mr-4">Social Book</h1>
+{# prettier ignore-start #} {% extends "layout.html" %} 
 
-          <!-- search bar -->
-          <form action="/search" method="POST">
-            {% csrf_token %}
-            <div class="relative hidden md:block">
-              <i
-                class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-              ></i>
-              <input
-                type="text"
-                name="username"
-                placeholder="Search Friends"
-                class="search-input pl-10"
-                value="{{ username|default:'' }}"
-              />
-              <button
-                type="submit"
-                class="bg-blue-500 hover:bg-blue-600 border-none text-white px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
-              >
-                <i class="fa fa-search fa-1x"></i>
-              </button>
-            </div>
-          </form>
-        </div>
+<!-- extra -->
+{% load static %} {% load socials_extras %} 
 
-        <!-- notification and profile -->
-        <div class="flex items-center space-x-4">
-          <!-- Notification Button - Smaller on mobile, positioned where search was -->
-          <div class="relative">
+<!-- title -->
+{% block title %} Social Book - Search {% endblock %} 
+
+<!-- block -->
+{% block content %}
+<!-- Main Content -->
+<div class="flex-1 pt-4">
+  <div class="max-w-[680px] mx-auto p-4">
+    <!-- Mobile search for small screens -->
+    <div class="md:hidden mb-4">
+      <form action="/search" method="POST">
+        {% csrf_token %}
+        <div class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] p-3">
+          <div class="flex items-center">
+            <i class="fas fa-search text-gray-500 mr-3"></i>
+            <input
+              type="text"
+              name="username"
+              placeholder="Search Friends"
+              class="flex-1 border-none outline-none text-[15px]"
+              value="{{ username|default:'' }}"
+            />
             <button
-              id="headerNotificationToggle"
-              class="text-gray-600 hover:text-blue-500 p-2 rounded-full relative md:p-2"
+              type="submit"
+              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full ml-2"
             >
-              <i class="fas fa-bell text-lg md:text-xl"></i>
-              <span class="notification-badge">3</span>
+              <i class="fas fa-search"></i>
             </button>
-          </div>
-
-          <!-- Profile Button -->
-          <div class="relative">
-            <button id="profileButton">
-              <img
-                src="{{ user.profile.profilepic.url }}"
-                class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center"
-              />
-            </button>
-            <div
-              id="profileDropdown"
-              class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden z-50"
-            >
-              <a
-                href="{% url 'profile' user.username %}"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >Profile</a
-              >
-              <a
-                href="{% url 'settings' %}"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >Settings</a
-              >
-              <a
-                href="{% url 'logout' %}"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >Log out</a
-              >
-            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </form>
+    </div>
 
-    <!-- Overlay for left sidebar (mobile) -->
+    <!-- Search Results Header -->
+    {% if username %}
     <div
-      id="sidebarOverlay"
-      class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden"
-    ></div>
-
-    <div class="flex flex-1">
-      <!-- Left Sidebar -->
-      <div
-        id="sidebar"
-        class="w-[280px] bg-white h-screen fixed z-20 overflow-y-auto"
-      >
-        <div class="p-4">
-          <div class="flex justify-between items-center mb-3">
-            <button
-              id="closeSidebar"
-              class="md:hidden text-gray-500 hover:bg-gray-100 p-2 rounded-full"
-            >
-              <i class="fas fa-times text-xl"></i>
-            </button>
-          </div>
-
-          <div class="mb-6">
-            <ul>
-              <a href="/">
-                <li class="sidebar-item flex items-center cursor-pointer">
-                  <i
-                    class="fas fa-home w-[36px] text-[20px] text-[#1b74e4]"
-                  ></i>
-                  <span>Home</span>
-                </li>
-              </a>
-
-              <li class="sidebar-item flex items-center cursor-pointer">
-                <i
-                  class="fas fa-user-friends w-[36px] text-[20px] text-[#1b74e4]"
-                ></i>
-                <span>Friends</span>
-              </li>
-              <a href="search">
-                <li class="sidebar-item flex items-center cursor-pointer">
-                  <i
-                    class="fas fa-search w-[36px] text-[20px] text-[#1b74e4]"
-                  ></i>
-                  <span>Search</span>
-                </li>
-              </a>
-              <li class="sidebar-item flex items-center cursor-pointer">
-                <i
-                  class="fas fa-bookmark w-[36px] text-[20px] text-[#1b74e4]"
-                ></i>
-                <span>Saved</span>
-              </li>
-            </ul>
-            <p
-              class="text-[#1877f2] mt-1 cursor-pointer hover:underline pl-[44px] text-[15px]"
-            >
-              See More
-            </p>
-          </div>
-        </div>
+      class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4 p-4"
+    >
+      <div class="flex items-center">
+        <i class="fas fa-search text-blue-500 text-xl mr-3"></i>
+        <h2 class="text-[18px] font-semibold text-gray-800">
+          Search results for
+          <span class="text-blue-600">"{{ username }}"</span>
+        </h2>
       </div>
+    </div>
+    {% endif %}
 
-      <!-- Overlay for right sidebar -->
-      <div
-        id="rightSidebarOverlay"
-        class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden"
-      ></div>
-
-      <!-- Main Content - Search Section -->
-      <div class="flex-1 md:ml-[280px] pt-4">
-        <div class="max-w-[680px] mx-auto p-4">
-          <!-- Mobile search for small screens -->
-          <div class="md:hidden mb-4">
-            <form action="/search" method="POST">
-              {% csrf_token %}
-              <div
-                class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] p-3"
-              >
-                <div class="flex items-center">
-                  <i class="fas fa-search text-gray-500 mr-3"></i>
-                  <input
-                    type="text"
-                    name="username"
-                    placeholder="Search Friends"
-                    class="flex-1 border-none outline-none text-[15px]"
-                    value="{{ username|default:'' }}"
-                  />
-                  <button
-                    type="submit"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full ml-2"
-                  >
-                    <i class="fas fa-search"></i>
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-
-          <!-- Search Results Header -->
-          {% if username %}
-          <div
-            class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4 p-4"
-          >
-            <div class="flex items-center">
-              <i class="fas fa-search text-blue-500 text-xl mr-3"></i>
-              <h2 class="text-[18px] font-semibold text-gray-800">
-                Search results for
-                <span class="text-blue-600">"{{ username }}"</span>
-              </h2>
-            </div>
-          </div>
-          {% endif %}
-
-          <!-- Search Results -->
-          {% if username_profile_list %}
-          <!-- Loop through each user profile -->
-          {% for users in username_profile_list %}
-          <div
-            class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"
-          >
-            <div class="p-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <div
-                    class="w-[60px] h-[60px] rounded-full bg-gray-300 flex items-center justify-center mr-4"
-                  >
-                    <a href="{% url 'profile' users.user %}">
-                      <div
-                        class="bg-gradient-to-tr from-yellow-600 to-pink-600 p-0.5 rounded-full"
-                      >
-                        <img
-                          src="{% if users.profilepic and users.profilepic.url %}{{ users.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
-                          alt="Profile Image"
-                          class="bg-gray-200 border-2 border-white rounded-full w-14 h-14 object-cover"
-                        />
-                      </div>
-                    </a>
-                  </div>
-                  <div class="flex flex-col">
-                    <h3 class="font-semibold text-[17px] mb-1">
-                      <a
-                        href="{% url 'profile' users.user %}"
-                        class="text-gray-800 hover:text-blue-600 no-underline"
-                      >
-                        {{ users.user }}
-                      </a>
-                    </h3>
-                    {% if users.bio %}
-                    <p class="text-[14px] text-gray-600 mb-1">
-                      {{ users.bio|truncatewords:15 }}
-                    </p>
-                    {% endif %} {% if users.location %}
-                    <p class="text-[12px] text-gray-500 flex items-center">
-                      <i class="fas fa-map-marker-alt mr-1"></i>
-                      {{ users.location }}
-                    </p>
-                    {% endif %}
-                  </div>
-                </div>
-                <div class="flex flex-col items-end">
-                  <a
-                    href="{% url 'profile' users.user %}"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full text-[14px] font-medium transition-all duration-300 no-underline mb-2"
-                  >
-                    View Profile
-                  </a>
-                  <button class="text-gray-500 hover:text-blue-500 text-[12px]">
-                    <i class="fas fa-user-plus mr-1"></i>
-                    Add Friend
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-          <!-- Handle search state -->
-          {% elif request.method == 'POST' and username %}
-          <!-- No Results Found -->
-          <div
-            class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"
-          >
-            <div class="p-8 text-center">
-              <div class="text-gray-400 mb-4">
-                <i class="fas fa-search text-6xl"></i>
-              </div>
-              <h3 class="text-[20px] font-semibold text-gray-700 mb-2">
-                No results found
-              </h3>
-              <p class="text-[15px] text-gray-600 mb-4">
-                We couldn't find any users matching
-                <span class="font-semibold text-blue-600"
-                  >"{{ username }}"</span
-                >
-              </p>
-              <p class="text-[14px] text-gray-500">
-                Try searching with a different username or check your spelling.
-              </p>
-            </div>
-          </div>
-          {% else %}
-          <!-- Welcome Search Message -->
-          <div
-            class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"
-          >
-            <div class="p-8 text-center">
-              <div class="text-blue-500 mb-4">
-                <i class="fas fa-users text-6xl"></i>
-              </div>
-              <h3 class="text-[20px] font-semibold text-gray-800 mb-2">
-                Find Your Friends
-              </h3>
-              <p class="text-[15px] text-gray-600 mb-4">
-                Search for friends by their username to connect and follow their
-                updates.
-              </p>
-              <p class="text-[14px] text-gray-500">
-                Use the search bar above to get started!
-              </p>
-            </div>
-          </div>
-          {% endif %}
-
-          <!-- Search Tips -->
-          <div
-            class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border-l-4 border-blue-400 mb-4"
-          >
-            <h4 class="text-[16px] font-semibold text-blue-900 mb-2">
-              <i class="fas fa-lightbulb mr-2"></i>
-              Search Tips
-            </h4>
-            <ul class="text-[14px] text-blue-800 space-y-1">
-              <li>• Try searching with the exact username</li>
-              <li>• Search is case-sensitive</li>
-              <li>• Make sure there are no extra spaces</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Sidebar (Notifications) -->
-      <div
-        id="rightSidebar"
-        class="fixed top-0 right-0 bg-white h-screen z-40 overflow-y-auto p-4"
-      >
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="font-semibold text-[20px]">Notifications</h3>
-          <button
-            id="closeRightSidebar"
-            class="text-gray-500 hover:bg-gray-100 p-2 rounded-full"
-          >
-            <i class="fas fa-times text-xl"></i>
-          </button>
-        </div>
-
-        <!-- Birthdays -->
-        <div class="mb-6">
-          <h3 class="font-semibold mb-3 text-[17px] text-[#65676b]">
-            Birthdays
-          </h3>
+    <!-- Search Results -->
+    {% if username_profile_list %}
+    <!-- Loop through each user profile -->
+    {% for users in username_profile_list %}
+    <div class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4">
+      <div class="p-4">
+        <div class="flex items-center justify-between">
           <div class="flex items-center">
             <div
-              class="w-[40px] h-[40px] rounded-full bg-[#e4e6eb] flex items-center justify-center mr-3"
+              class="w-[60px] h-[60px] rounded-full bg-gray-300 flex items-center justify-center mr-4"
             >
-              <i class="fas fa-birthday-cake text-[#f3425f]"></i>
-            </div>
-            <p class="text-[15px]">
-              Pola Foster and 3 other friends have birthday today
-            </p>
-          </div>
-        </div>
-
-        <!-- Latest Activity -->
-        <div class="mb-6">
-          <h3 class="font-semibold mb-3 text-[17px] text-[#65676b]">
-            Latest Activity
-          </h3>
-          <div class="flex items-start mb-3">
-            <div
-              class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
-            >
-              <i class="fas fa-user text-gray-500"></i>
-            </div>
-            <div>
-              <p class="text-[15px]">
-                Halfly Harald Gomes added a photo in Talk.js
-              </p>
-              <p class="text-[#65676b] text-[13px]">about an hour ago</p>
-            </div>
-          </div>
-          <div class="flex items-start">
-            <div
-              class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
-            >
-              <i class="fas fa-user text-gray-500"></i>
-            </div>
-            <div>
-              <p class="text-[15px]">Alex kai sent you a friend request</p>
-              <p class="text-[#65676b] text-[13px]">3 hours ago</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Friend Suggestions -->
-        <div>
-          <h3 class="font-semibold mb-3 text-[17px] text-[#65676b]">
-            Friends You can follow
-          </h3>
-          {% for suggestion in suggestions %}
-          <div class="grid grid-cols-3 gap-3">
-            <div class="text-center">
-              <div
-                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
-              >
-                <a href="{% url 'profile' suggestion.username %}">
+              <a href="{% url 'profile' users.user %}">
+                <div
+                  class="bg-gradient-to-tr from-yellow-600 to-pink-600 p-0.5 rounded-full"
+                >
                   <img
-                    src="{% if suggestion.profile.profilepic and suggestion.profile.profilepic.url %}{{ suggestion.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
-                    class="bg-gray-600 rounded-full w-30 h-30 object-cover hover:border-4 hover:border-blue-500"
+                    src="{% if users.profilepic and users.profilepic.url %}{{ users.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                    alt="Profile Image"
+                    class="bg-gray-200 border-2 border-white rounded-full w-14 h-14 object-cover"
                   />
-                </a>
-                <div class="active-dot"></div>
-              </div>
-              <p class="text-[23px]">{{ suggestion.username }}</p>
+                </div>
+              </a>
             </div>
-            {% empty %}
-            <div class="flex items-center justify-center py-6 text-secondary">
-              <p>No suggestions available</p>
+            <div class="flex flex-col">
+              <h3 class="font-semibold text-[17px] mb-1">
+                <a
+                  href="{% url 'profile' users.user %}"
+                  class="text-gray-800 hover:text-blue-600 no-underline"
+                >
+                  {{ users.user }}
+                </a>
+              </h3>
+              {% if users.bio %}
+              <p class="text-[14px] text-gray-600 mb-1">
+                {{ users.bio|truncatewords:15 }}
+              </p>
+              {% endif %} {% if users.location %}
+              <p class="text-[12px] text-gray-500 flex items-center">
+                <i class="fas fa-map-marker-alt mr-1"></i>
+                {{ users.location }}
+              </p>
+              {% endif %}
             </div>
           </div>
-          {% endfor %}
+          <div class="flex flex-col items-end">
+            <a
+              href="{% url 'profile' users.user %}"
+              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full text-[14px] font-medium transition-all duration-300 no-underline mb-2"
+            >
+              View Profile
+            </a>
+            <button class="text-gray-500 hover:text-blue-500 text-[12px]">
+              <i class="fas fa-user-plus mr-1"></i>
+              Add Friend
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </body>
-</html>
+    {% endfor %}
+    <!-- Handle search state -->
+    {% elif request.method == 'POST' and username %}
+    <!-- No Results Found -->
+    <div class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4">
+      <div class="p-8 text-center">
+        <div class="text-gray-400 mb-4">
+          <i class="fas fa-search text-6xl"></i>
+        </div>
+        <h3 class="text-[20px] font-semibold text-gray-700 mb-2">
+          No results found
+        </h3>
+        <p class="text-[15px] text-gray-600 mb-4">
+          We couldn't find any users matching
+          <span class="font-semibold text-blue-600">"{{ username }}"</span>
+        </p>
+        <p class="text-[14px] text-gray-500">
+          Try searching with a different username or check your spelling.
+        </p>
+      </div>
+    </div>
+    {% else %}
+    <!-- Welcome Search Message -->
+    <div class="bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4">
+      <div class="p-8 text-center">
+        <div class="text-blue-500 mb-4">
+          <i class="fas fa-users text-6xl"></i>
+        </div>
+        <h3 class="text-[20px] font-semibold text-gray-800 mb-2">
+          Find Your Friends
+        </h3>
+        <p class="text-[15px] text-gray-600 mb-4">
+          Search for friends by their username to connect and follow their
+          updates.
+        </p>
+        <p class="text-[14px] text-gray-500">
+          Use the search bar above to get started!
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Search Tips -->
+    <div
+      class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border-l-4 border-blue-400 mb-4"
+    >
+      <h4 class="text-[16px] font-semibold text-blue-900 mb-2">
+        <i class="fas fa-lightbulb mr-2"></i>
+        Search Tips
+      </h4>
+      <ul class="text-[14px] text-blue-800 space-y-1">
+        <li>• Try searching with the exact username</li>
+        <li>• Search is case-sensitive</li>
+        <li>• Make sure there are no extra spaces</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %} {# prettier ignore-end #}
