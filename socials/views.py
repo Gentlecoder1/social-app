@@ -33,6 +33,24 @@ def create_notification(recipient, sender, notification_type, post=None, comment
         comment=comment
     )
 
+def get_shared_context(user):
+    """Get shared context data for suggestions and notifications."""
+    # Get suggested users (optimized version)
+    followed_users = Follow.objects.filter(follower=user).values_list('following', flat=True)
+    suggestions = User.objects.select_related('profile').exclude(
+        id=user.id
+    ).exclude(id__in=followed_users)[:5]
+
+    # Get recent notifications for the sidebar
+    notifications = Notification.objects.filter(
+        recipient=user
+    ).select_related('sender', 'sender__profile', 'post').order_by('-created_at')[:10]
+
+    return {
+        "suggestions": suggestions,
+        "notifications": notifications
+    }
+
 def create_post_notification(post):
     """Create notification when a new post is created - notify followers."""
     # Get all followers of the post author
@@ -91,6 +109,12 @@ def create_unfollow_notification(following_user, follower_user):
         notification_type='unfollow'
     )
 
+@login_required(login_url='signin')
+def layout(request):
+    # Get shared context data
+    context_data = get_shared_context(request.user)
+    return render(request, "layout.html", context_data)
+
 #new home view
 @login_required(login_url='signin')
 def new_home(request):
@@ -109,25 +133,18 @@ def new_home(request):
     for post in posts:
         post.post_comments = post.comments.all()  # Use prefetched data
     
-    # Get suggested users (optimized version)
-    followed_users = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
-    suggestions = User.objects.select_related('profile').exclude(
-        id=request.user.id
-    ).exclude(id__in=followed_users)[:5]
-
-    # Get recent notifications for the sidebar
-    notifications = Notification.objects.filter(
-        recipient=request.user
-    ).select_related('sender', 'sender__profile', 'post').order_by('-created_at')[:10]
+    # Get shared context data (suggestions and notifications)
+    shared_context = get_shared_context(request.user)
 
     context_data = {
         "user_profile": user_profile, 
         "posts": posts, 
         "liked_post_ids": liked_post_ids,
-        "suggestions": suggestions,
-        "notifications": notifications,
         "created_at": posts[0].created_at.strftime("%Y-%m-%d %H:%M:%S") if posts else None
     }
+    
+    # Add shared context data
+    context_data.update(shared_context)
     
     return render(request, "index_simple.html", context_data)
 
@@ -289,7 +306,13 @@ def profile(request, pk):
         "button_text": button_text,
         "liked_post_ids": liked_post_ids,
     }
-    
+
+    # Get shared context data (suggestions and notifications)
+    shared_context = get_shared_context(request.user)
+
+    # Add shared context data
+    context.update(shared_context)
+
     return render(request, "profile.html", context)
 
 @login_required(login_url='signin')
@@ -408,6 +431,18 @@ def search(request):
     
     username_profile_list = []
     username = ""
+
+    # Get shared context data (suggestions and notifications)
+    shared_context = get_shared_context(request.user)
+
+    context_data = {
+        "user_profile": user_profile, 
+        "username_profile_list": username_profile_list,
+        "username": username,
+    }
+    
+    # Add shared context data
+    context_data.update(shared_context)
     
     if request.method == "POST":
         username = request.POST.get("username")
@@ -425,11 +460,7 @@ def search(request):
                     # Skip users without profiles
                     continue
 
-    return render(request, "search.html", {
-        "user_profile": user_profile, 
-        "username_profile_list": username_profile_list,
-        "username": username
-    })
+    return render(request, "search.html", context_data)
 
 def debug_users(request):
     users = User.objects.all()

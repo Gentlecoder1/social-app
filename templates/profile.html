@@ -1,65 +1,15 @@
-{% load static %} {% load socials_extras %}
+{# prettier ignore-start #} {% extends "layout.html" %} 
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Profile page of {{user_profile.user.username}}"
-    />
-    <title>{{user_profile.user.username}} - Profile | Social Book</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="{% static 'profile.js' %}?v=20250819"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <link
-      rel="icon"
-      href="{% static 'images/fav.png' %}"
-      type="image/png"
-      sizes="16x16"
-    />
-    <link rel="stylesheet" href="{% static 'styles.css' %}" />
-  </head>
-  <body class="bg-gray-300 font-sans">
-    <!-- Hidden CSRF token for JavaScript -->
-    <div id="csrf-token-container" style="display: none">{% csrf_token %}</div>
+<!-- extra -->
+{% load static %} {% load socials_extras %} 
 
-    <!-- Navigation Header -->
-    <nav class="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <div class="flex items-center space-x-4">
-            <h1 class="text-2xl font-bold text-gray-800">Social Book</h1>
-          </div>
+<!-- title -->
+{% block title %} {{user_profile.user.username}} - Profile | Social Book {% endblock %} 
 
-          <div class="flex items-center space-x-4">
-            <a
-              href="/"
-              class="text-gray-600 hover:text-gray-900 flex items-center space-x-2 text-sm"
-            >
-              <i class="fas fa-home"></i>
-              <span class="hidden sm:inline">Home</span>
-            </a>
-            {% if user_object.username == user.username %}
-            <a
-              href="/settings"
-              class="text-gray-600 hover:text-gray-900 flex items-center space-x-2 text-sm"
-            >
-              <i class="fas fa-cog"></i>
-              <span class="hidden sm:inline">Edit profile</span>
-            </a>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="pt-16">
+<!-- block -->
+{% block content %}
+<!-- Main Content -->
+    <main class="-pt-2">
       <!-- Profile Header -->
       <div class="profile-header w-full h-[400px]">
         {% if user_profile.cover_photo and user_profile.cover_photo.url %}
@@ -521,6 +471,4 @@
       </div>
     </footer>
 
-    <!-- Universal app JavaScript loaded above -->
-  </body>
-</html>
+{% endblock %} {# prettier ignore-end #}
