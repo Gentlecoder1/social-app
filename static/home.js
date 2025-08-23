@@ -291,6 +291,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ).value;
       button.disabled = true;
       button.style.opacity = "0.6";
+      
       fetch("/like_post/", {
         method: "POST",
         headers: {
@@ -325,6 +326,69 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(() => {
           button.disabled = false;
           button.style.opacity = "1";
+        });
+    });
+  });
+
+  // Save Post functionality
+  document.querySelectorAll(".save-post-btn").forEach(function (button) {
+    button.addEventListener("click", function (e) {
+      e.preventDefault();
+      const postId = button.getAttribute("data-post-id");
+      const csrfToken = document.querySelector(
+        'input[name="csrfmiddlewaretoken"]'
+      ).value;
+      
+      const saveText = button.querySelector(".save-text");
+      const originalText = saveText.textContent;
+      
+      // Disable button temporarily
+      button.style.opacity = "0.6";
+      button.style.pointerEvents = "none";
+      saveText.textContent = "Saving...";
+      
+      fetch("/save_post/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-CSRFToken": csrfToken,
+        },
+        body: `post_id=${postId}`,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            // Update button text based on saved status
+            if (data.saved) {
+              saveText.textContent = "Unsave Post";
+            } else {
+              saveText.textContent = "Save Post";
+            }
+            
+            // Show success message
+            const message = document.createElement("div");
+            message.className = "fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md z-50";
+            message.textContent = data.message;
+            document.body.appendChild(message);
+            
+            // Remove message after 3 seconds
+            setTimeout(() => {
+              message.remove();
+            }, 3000);
+          } else {
+            saveText.textContent = originalText;
+            console.error("Error saving post:", data.error);
+          }
+          
+          // Re-enable button
+          button.style.opacity = "1";
+          button.style.pointerEvents = "auto";
+        })
+        .catch((error) => {
+          console.error("Error saving post:", error);
+          saveText.textContent = originalText;
+          button.style.opacity = "1";
+          button.style.pointerEvents = "auto";
         });
     });
   });

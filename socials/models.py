@@ -15,6 +15,7 @@ class Profile(models.Model):
     profilepic = models.ImageField(upload_to='profile_pics/', default='blank-profile-picture.png')
     cover_photo = models.ImageField(upload_to='cover_photos/', blank=True, null=True)
     location = models.CharField(max_length=100, blank=True)
+    saved_posts = models.ManyToManyField('Post', blank=True, related_name='saved_by')
 
     def __str__(self):
         return str(self.user.id)

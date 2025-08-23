@@ -144,12 +144,14 @@
                   <span>Search</span>
                 </li>
               </a>
-              <li class="sidebar-item flex items-center cursor-pointer">
-                <i
-                  class="fas fa-bookmark w-[36px] text-[20px] text-[#1b74e4]"
-                ></i>
-                <span>Saved</span>
-              </li>
+              <a href="{% url 'saved' %}">
+                <li class="sidebar-item flex items-center cursor-pointer">
+                  <i
+                    class="fas fa-bookmark w-[36px] text-[20px] text-[#1b74e4]"
+                  ></i>
+                  <span>Saved</span>
+                </li>
+              </a>
             </ul>
           </div>
         </div>

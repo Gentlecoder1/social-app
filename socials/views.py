@@ -9,6 +9,24 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 import random
 
+def get_shared_context(user):
+    """Get shared context data for suggestions and notifications."""
+    # Get suggested users (optimized version)
+    followed_users = Follow.objects.filter(follower=user).values_list('following', flat=True)
+    suggestions = User.objects.select_related('profile').exclude(
+        id=user.id
+    ).exclude(id__in=followed_users)[:5]
+
+    # Get recent notifications for the sidebar
+    notifications = Notification.objects.filter(
+        recipient=user
+    ).select_related('sender', 'sender__profile', 'post').order_by('-created_at')[:10]
+
+    return {
+        "suggestions": suggestions,
+        "notifications": notifications
+    }
+
 # Notification Helper Functions
 def create_notification(recipient, sender, notification_type, post=None, comment=None):
     """Create a notification with automatic duplicate prevention."""
@@ -32,57 +50,6 @@ def create_notification(recipient, sender, notification_type, post=None, comment
         post=post,
         comment=comment
     )
-
-@login_required(login_url='signin')
-def post(request, post_id):
-    """View a single post with its details."""
-    post = get_object_or_404(Post.objects.select_related('user', 'user__profile').prefetch_related(
-        'comments__username__profile',  # Prefetch comments and their authors
-        'likes'  # Prefetch likes to optimize like count retrieval
-    ), id=post_id)
-    
-    # Check if the current user has liked this post
-    liked = LikePost.objects.filter(post_id=post, username=request.user).exists()
-    
-    # Get all comments for the post
-    comments = post.comments.all().select_related('username', 'username__profile').order_by('created_at')
-    
-    # Get or create user profile (handles case where profile doesn't exist)
-    user_profile, created = Profile.objects.select_related('user').get_or_create(user=request.user)
-    
-    # Get shared context data (suggestions and notifications)
-    shared_context = get_shared_context(request.user)
-
-    context = {
-        "post": post,
-        "liked": liked,
-        "comments": comments,
-        "user_profile": user_profile,
-        "like_count": post.no_of_likes,
-    }
-    
-    # Add shared context data
-    context.update(shared_context)
-
-    return render(request, "post_detail.html", context)
-
-def get_shared_context(user):
-    """Get shared context data for suggestions and notifications."""
-    # Get suggested users (optimized version)
-    followed_users = Follow.objects.filter(follower=user).values_list('following', flat=True)
-    suggestions = User.objects.select_related('profile').exclude(
-        id=user.id
-    ).exclude(id__in=followed_users)[:5]
-
-    # Get recent notifications for the sidebar
-    notifications = Notification.objects.filter(
-        recipient=user
-    ).select_related('sender', 'sender__profile', 'post').order_by('-created_at')[:10]
-
-    return {
-        "suggestions": suggestions,
-        "notifications": notifications
-    }
 
 def create_post_notification(post):
     """Create notification when a new post is created - notify followers."""
@@ -142,46 +109,6 @@ def create_unfollow_notification(following_user, follower_user):
         notification_type='unfollow'
     )
 
-@login_required(login_url='signin')
-def layout(request):
-    center_post = post(request.user)
-    # Get shared context data
-    context_data = get_shared_context(request.user)
-    return render(request, "layout.html", context_data, center_post=center_post)
-
-#new home view
-@login_required(login_url='signin')
-def new_home(request):
-    # Get or create user profile (handles case where profile doesn't exist)
-    user_profile, created = Profile.objects.select_related('user').get_or_create(user=request.user)
-
-    # Get posts with optimized queries using select_related and prefetch_related
-    posts = Post.objects.exclude(user=request.user).select_related('user', 'user__profile').prefetch_related(
-        'comments__username__profile'  # Prefetch comments and their authors to avoid N+1 queries
-    ).order_by('-created_at')[:20]  # Limit to 20 posts for better performance
-    
-    # Get the list of post IDs that the current user has liked
-    liked_post_ids = LikePost.objects.filter(username=request.user).values_list('post_id', flat=True)
-    
-    # Add post_comments attribute for template compatibility
-    for post in posts:
-        post.post_comments = post.comments.all()  # Use prefetched data
-    
-    # Get shared context data (suggestions and notifications)
-    shared_context = get_shared_context(request.user)
-
-    context_data = {
-        "user_profile": user_profile, 
-        "posts": posts, 
-        "liked_post_ids": liked_post_ids,
-        "created_at": posts[0].created_at.strftime("%Y-%m-%d %H:%M:%S") if posts else None
-    }
-    
-    # Add shared context data
-    context_data.update(shared_context)
-
-    return render(request, "index_simple.html", context_data)
-
 def signin(request):
     signin_errors = []
     
@@ -240,6 +167,78 @@ def signup(request):
             return render(request, "signin.html", {"signup_success": signup_success})
             
     return render(request, "signup.html")
+
+@login_required(login_url='signin')
+def layout(request):
+    center_post = post(request.user)
+    # Get shared context data
+    context_data = get_shared_context(request.user)
+    return render(request, "layout.html", context_data, center_post=center_post)
+
+#new home view
+@login_required(login_url='signin')
+def new_home(request):
+    # Get or create user profile (handles case where profile doesn't exist)
+    user_profile, created = Profile.objects.select_related('user').get_or_create(user=request.user)
+
+    # Get posts with optimized queries using select_related and prefetch_related
+    posts = Post.objects.exclude(user=request.user).select_related('user', 'user__profile').prefetch_related(
+        'comments__username__profile'  # Prefetch comments and their authors to avoid N+1 queries
+    ).order_by('-created_at')[:20]  # Limit to 20 posts for better performance
+    
+    # Get the list of post IDs that the current user has liked
+    liked_post_ids = LikePost.objects.filter(username=request.user).values_list('post_id', flat=True)
+    
+    # Add post_comments attribute for template compatibility
+    for post in posts:
+        post.post_comments = post.comments.all()  # Use prefetched data
+    
+    # Get shared context data (suggestions and notifications)
+    shared_context = get_shared_context(request.user)
+
+    context_data = {
+        "user_profile": user_profile, 
+        "posts": posts, 
+        "liked_post_ids": liked_post_ids,
+        "created_at": posts[0].created_at.strftime("%Y-%m-%d %H:%M:%S") if posts else None
+    }
+    # Add shared context data
+    context_data.update(shared_context)
+
+    return render(request, "index_simple.html", context_data)
+
+#View a single post with its details
+@login_required(login_url='signin')
+def post(request, post_id):
+    post = get_object_or_404(Post.objects.select_related('user', 'user__profile').prefetch_related(
+        'comments__username__profile',  # Prefetch comments and their authors
+        'likes'  # Prefetch likes to optimize like count retrieval
+    ), id=post_id)
+    
+    # Check if the current user has liked this post
+    liked = LikePost.objects.filter(post_id=post, username=request.user).exists()
+    
+    # Get all comments for the post
+    comments = post.comments.all().select_related('username', 'username__profile').order_by('created_at')
+    
+    # Get or create user profile (handles case where profile doesn't exist)
+    user_profile, created = Profile.objects.select_related('user').get_or_create(user=request.user)
+    
+    # Get shared context data (suggestions and notifications)
+    shared_context = get_shared_context(request.user)
+
+    context = {
+        "post": post,
+        "liked": liked,
+        "comments": comments,
+        "user_profile": user_profile,
+        "like_count": post.no_of_likes,
+    }
+    
+    # Add shared context data
+    context.update(shared_context)
+
+    return render(request, "post_detail.html", context)
 
 @login_required(login_url='signin')
 def logout(request):
@@ -350,6 +349,38 @@ def profile(request, pk):
     return render(request, "profile.html", context)
 
 @login_required(login_url='signin')
+def saved(request):
+    """Display all saved posts for the current user."""
+    user_profile, created = Profile.objects.get_or_create(user=request.user)
+    
+    # Get all saved posts with optimized queries
+    saved_posts = user_profile.saved_posts.select_related('user', 'user__profile').prefetch_related(
+        'comments__username__profile'
+    ).order_by('-created_at')
+    
+    # Add post_comments attribute for template compatibility
+    for post in saved_posts:
+        post.post_comments = post.comments.all()
+    
+    # Get liked posts for current user
+    liked_post_ids = LikePost.objects.filter(username=request.user).values_list('post_id', flat=True)
+    
+    # Get shared context data (suggestions and notifications)
+    shared_context = get_shared_context(request.user)
+    
+    context = {
+        "user_profile": user_profile,
+        "posts": saved_posts,
+        "liked_post_ids": liked_post_ids,
+        "page_title": "Saved Posts"
+    }
+    
+    # Add shared context data
+    context.update(shared_context)
+    
+    return render(request, "saved.html", context)
+
+@login_required(login_url='signin')
 def settings(request):
     user_profile, created = Profile.objects.get_or_create(user=request.user)
     if request.method == "POST":
@@ -440,6 +471,39 @@ def comment(request):
         }
         return JsonResponse(comment_data)
     return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
+
+@login_required(login_url='signin')
+def save_post(request):
+    if request.method == "POST":
+        post_id = request.POST.get("post_id")
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Post not found"}, status=404)
+        
+        # Get or create user profile
+        user_profile, created = Profile.objects.get_or_create(user=request.user)
+        
+        # Check if post is already saved
+        is_saved = user_profile.saved_posts.filter(id=post_id).exists()
+        
+        if is_saved:
+            # Unsave the post
+            user_profile.saved_posts.remove(post)
+            saved = False
+            message = "Post removed from saved posts"
+        else:
+            # Save the post
+            user_profile.saved_posts.add(post)
+            saved = True
+            message = "Post saved successfully"
+        
+        return JsonResponse({
+            "success": True,
+            "saved": saved,
+            "message": message
+        })
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
 @login_required(login_url='signin')
 def suggested_users(request):
