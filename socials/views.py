@@ -33,6 +33,39 @@ def create_notification(recipient, sender, notification_type, post=None, comment
         comment=comment
     )
 
+@login_required(login_url='signin')
+def post(request, post_id):
+    """View a single post with its details."""
+    post = get_object_or_404(Post.objects.select_related('user', 'user__profile').prefetch_related(
+        'comments__username__profile',  # Prefetch comments and their authors
+        'likes'  # Prefetch likes to optimize like count retrieval
+    ), id=post_id)
+    
+    # Check if the current user has liked this post
+    liked = LikePost.objects.filter(post_id=post, username=request.user).exists()
+    
+    # Get all comments for the post
+    comments = post.comments.all().select_related('username', 'username__profile').order_by('created_at')
+    
+    # Get or create user profile (handles case where profile doesn't exist)
+    user_profile, created = Profile.objects.select_related('user').get_or_create(user=request.user)
+    
+    # Get shared context data (suggestions and notifications)
+    shared_context = get_shared_context(request.user)
+
+    context = {
+        "post": post,
+        "liked": liked,
+        "comments": comments,
+        "user_profile": user_profile,
+        "like_count": post.no_of_likes,
+    }
+    
+    # Add shared context data
+    context.update(shared_context)
+
+    return render(request, "post_detail.html", context)
+
 def get_shared_context(user):
     """Get shared context data for suggestions and notifications."""
     # Get suggested users (optimized version)
@@ -111,9 +144,10 @@ def create_unfollow_notification(following_user, follower_user):
 
 @login_required(login_url='signin')
 def layout(request):
+    center_post = post(request.user)
     # Get shared context data
     context_data = get_shared_context(request.user)
-    return render(request, "layout.html", context_data)
+    return render(request, "layout.html", context_data, center_post=center_post)
 
 #new home view
 @login_required(login_url='signin')
@@ -145,7 +179,7 @@ def new_home(request):
     
     # Add shared context data
     context_data.update(shared_context)
-    
+
     return render(request, "index_simple.html", context_data)
 
 def signin(request):

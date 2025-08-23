@@ -190,8 +190,9 @@
           <div class="space-y-3">
             {% for notification in notifications %}
             <div
-              class="flex items-start space-x-3 p-2 rounded hover:bg-gray-50 {% if not notification.is_read %}bg-blue-50{% endif %}"
+              class="flex items-start space-x-3 p-2 rounded hover:bg-gray-50 {% if not notification.is_read %}bg-blue-50{% endif %} cursor-pointer"
               data-notification-id="{{ notification.id }}"
+              onclick="handleNotificationClick('{{ notification.notification_type }}', '{{ notification.post.id|default:'' }}', '{{ notification.sender.username }}')"
             >
               <!-- User Profile Picture -->
               <div class="flex-shrink-0">
@@ -237,7 +238,7 @@
               <!-- Delete Notification Button -->
               <div class="flex-shrink-0">
                 <button
-                  onclick="deleteNotification({{ notification.id }})"
+                  onclick="event.stopPropagation(); deleteNotification({{ notification.id }})"
                   class="text-gray-500 hover:text-red-600 p-2 rounded-full hover:bg-gray-100 transition-all duration-200"
                   title="Delete notification"
                 >
@@ -284,6 +285,22 @@
         </div>
       </aside>
     </div>
+    
+    <script>
+    function handleNotificationClick(notificationType, postId, senderUsername) {
+      // Handle different notification types
+      if (notificationType === 'like' || notificationType === 'unlike' || 
+          notificationType === 'comment' || notificationType === 'post') {
+        // For post-related notifications, go to the specific post
+        if (postId && postId !== '') {
+          window.location.href = '/post/' + postId;
+        }
+      } else if (notificationType === 'follow' || notificationType === 'unfollow') {
+        // For follow notifications, go to the sender's profile
+        window.location.href = '/profile/' + senderUsername;
+      }
+    }
+    </script>
   </body>
 </html>
 {# prettier ignore-end #}
