@@ -165,7 +165,7 @@
           {% for post in posts %}
           <!-- Miniature Post Card with Full Functionality -->
           <div
-            class="bg-white max-w-3xl rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200"
+            class="bg-white max-w-3xl rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.2)] mb-4"
           >
             <!-- Post Header -->
             <div
@@ -210,12 +210,13 @@
                     </li>
                     {% endif %}
                     <li>
-                      <a
+                     <a
                         href="#"
-                        class="flex items-center px-3 py-2 hover:bg-gray-100 hover:text-blue-600 rounded-md"
+                        class="save-post-btn flex items-center px-3 py-2 hover:bg-gray-100 hover:text-blue-600 rounded-md"
+                        data-post-id="{{ post.id }}"
                       >
-                        <i class="fas fa-comment-slash mr-2 text-xs"></i>
-                        Disable comments
+                        <i class="fas fa-bookmark mr-2"></i>
+                        <span class="save-text">{% if user.profile in post.saved_by.all %}Unsave Post{% else %}Save Post{% endif %}</span>
                       </a>
                     </li>
                     <li>
@@ -300,9 +301,9 @@
 
             <!-- Engagement Count -->
             <div
-              class="px-3 py-1 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500"
+              class="px-4 py-2 border-t border-gray-100 flex justify-between items-center text-sm text-gray-500"
             >
-              <div class="flex items-center space-x-3">
+              <div class="flex items-center space-x-4">
                 <div class="flex items-center space-x-1">
                   <div
                     class="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center"
@@ -362,21 +363,21 @@
 
             <!-- Comments Section (Initially Hidden) -->
             <div
-              class="comments-section border-t hidden transition-all duration-300 ease-in-out"
+              class="comments-section border-t hidden transition-all duration-300 ease-out-in"
               data-post-id="{{ post.id }}"
             >
               <div class="comments-fade-overlay">
                 <div
-                  class="comments-scroll-container space-y-2 p-3"
+                  class="comments-scroll-container bg-black"
                   id="comments-container-{{ post.id }}"
                 >
                   {% for comment in post.post_comments %}
-                  <div class="flex comment-item space-x-2">
-                    <div class="flex-shrink-0">
+                  <div class="flex comment-item px-4 py-3">
+                    <div class="flex-shrink-0 relative rounded-full border-2 border-blue-600">
                       <img
                         src="{% if comment.username.profile.profilepic and comment.username.profile.profilepic.url %}{{ comment.username.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
                         alt="Profile Image"
-                        class="w-6 h-6 rounded-full object-cover"
+                        class="w-8 h-8 rounded-full object-cover"
                       />
                     </div>
                     <div class="bg-gray-100 rounded-lg px-3 py-2 flex-1">

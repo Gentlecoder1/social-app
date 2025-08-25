@@ -17,7 +17,8 @@
         {{ post.user.username }}'s Post
     </h2>
   </div>
-  <!-- Single Post Card -->
+  <!-- Saved Post Cards -->
+
   <div class="bg-white rounded-lg shadow-sm border border-gray-100">
     <!-- Post Header -->
     <div class="p-4 flex items-center justify-between border-b border-gray-100">
@@ -93,10 +94,10 @@
     </div>
 
     <!-- Post Content -->
-    <div class="p-4">
+    <div class="p-3">
       <!-- Caption (if exists) -->
       {% if post.caption %}
-      <p class="text-sm text-gray-800 mb-4 leading-relaxed">
+      <p class="text-sm text-gray-800 mb-4">
         {{ post.caption }}
       </p>
       {% endif %}
@@ -118,7 +119,7 @@
         <img
           src="{{ post.media.url }}"
           alt="{{ post.caption }}"
-          class="w-full max-h-96 object-contain"
+          class="post-image"
         />
       </div>
       {% else %}
@@ -267,15 +268,5 @@
     </div>
   </div>
 </div>
-
-<script>
-function copyPostLink(url) {
-  navigator.clipboard.writeText('http://' + url).then(function() {
-    alert('Post link copied to clipboard!');
-  }, function() {
-    alert('Failed to copy link');
-  });
-}
-</script>
 {% endblock %} 
 {# prettier ignore-end #}

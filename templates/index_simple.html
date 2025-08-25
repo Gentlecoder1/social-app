@@ -176,38 +176,45 @@
         </div>
         <hr class="border-black mb-2" />
 
-        <!-- Media display - either image or video -->
-        {% if post.media and post.media_type == 'video' %}
-        <!-- Video post -->
-        <p class="mb-3 text-[15px]">{{ post.caption }}</p>
-        <a href="{{ post.media.url }}" class="post-media-link">
-          <video
-            src="{{ post.media.url }}"
-            class="post-video"
-            controls
-            preload="metadata"
-          >
-            Your browser does not support the video tag.
-          </video>
-        </a>
-        {% elif post.media %}
-        <!-- Image post -->
-        <p class="mb-3 text-[15px]">{{ post.caption }}</p>
-        <a href="{{ post.media.url }}" class="post-media-link">
-          <img
-            src="{{ post.media.url }}"
-            alt="{{ post.caption }}"
-            class="post-image"
-          />
-        </a>
-        {% else %}
-        <!-- Text-only post -->
-        <div class="bg-black mx-2 rounded-lg p-6 text-center">
-          <p class="text-[20px] font-bold text-blue-800 leading-relaxed">
+        <div class="p-3">
+          <!-- Caption (if exists) -->
+          {% if post.caption %}
+          <p class="text-sm text-gray-800 mb-3 leading-relaxed">
             {{ post.caption }}
           </p>
+          {% endif %}
+
+          <!-- Media display - either image or video -->
+          {% if post.media and post.media_type == 'video' %}
+          <!-- Video post -->
+          <a href="{{ post.media.url }}" class="post-media-link">
+            <video
+              src="{{ post.media.url }}"
+              class="post-video"
+              controls
+              preload="metadata"
+            >
+              Your browser does not support the video tag.
+            </video>
+          </a>
+          {% elif post.media %}
+          <!-- Image post -->
+          <a href="{{ post.media.url }}" class="post-media-link">
+            <img
+              src="{{ post.media.url }}"
+              alt="{{ post.caption }}"
+              class="post-image"
+            />
+          </a>
+          {% else %}
+          <!-- Text-only post -->
+          <div class="bg-black mx-2 rounded-lg p-6 text-center">
+            <p class="text-[20px] font-bold text-blue-800 leading-relaxed">
+              {{ post.caption }}
+            </p>
+          </div>
+          {% endif %}
         </div>
-        {% endif %}
       </div>
 
       <!-- engagement count -->
@@ -271,7 +278,7 @@
 
       <!-- display comments (initially hidden) -->
       <div
-        class="comments-section border-t hidden transition-all duration-300 ease-in-out"
+        class="comments-section border-t hidden transition-all duration-300 ease-out-in"
         data-post-id="{{ post.id }}"
       >
         <div class="comments-fade-overlay">
@@ -287,7 +294,7 @@
                 <img
                   src="{% if comment.username.profile.profilepic and comment.username.profile.profilepic.url %}{{ comment.username.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
                   alt="Profile Image"
-                  class="absolute h-full rounded-full w-full"
+                  class="h-full rounded-full w-full object-cover"
                 />
               </div>
               <div
