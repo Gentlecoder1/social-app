@@ -97,7 +97,7 @@
     </div>
     <hr class="border-black mb-2" />
 
-    <div class="p-3">
+    <div class="">
       <!-- Media display - either image or video -->
       {% if post.media and post.media_type == 'video' %}
       <!-- Video post -->
@@ -136,8 +136,8 @@
       </a>
       {% else %}
       <!-- Text-only post -->
-      <div class="post-caption-container bg-black mx-2 rounded-lg p-6 text-center" data-post-id="{{ post.id }}">
-        <p class="post-caption text-[20px] font-bold text-blue-800 leading-relaxed" data-full-text="{{ post.caption }}">
+      <div class="post-caption-container bg-black rounded-lg p-3 sm:p-6 text-center" data-post-id="{{ post.id }}">
+        <p class="post-caption text-[14px] sm:text-[19px] font-bold text-blue-800 leading-relaxed" data-full-text="{{ post.caption }}">
           {{ post.caption }}
         </p>
       </div>
