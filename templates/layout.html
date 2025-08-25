@@ -32,7 +32,7 @@
           <!-- search bar -->
           <form action="/search" method="POST">
             {% csrf_token %}
-            <div class="relative hidden md:block">
+            <div class="relative hidden sm:block">
               <i
                 class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
               ></i>
@@ -111,7 +111,7 @@
         class="w-[280px] bg-white h-screen fixed z-20 overflow-y-auto"
       >
         <div class="p-4">
-          <div class="flex justify-between items-center mb-3">
+          <div class="flex justify-between items-center">
             <button
               id="closeSidebar"
               class="md:hidden text-gray-500 hover:bg-gray-100 p-2 rounded-full"
@@ -136,7 +136,7 @@
                 ></i>
                 <span>Friends</span>
               </li>
-              <a href="search">
+              <a href="{% url 'search' %}">
                 <li class="sidebar-item flex items-center cursor-pointer">
                   <i
                     class="fas fa-search w-[36px] text-[20px] text-[#1b74e4]"
