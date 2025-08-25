@@ -256,15 +256,14 @@
 
             <!-- Post Content -->
             <div class="p-3">
-              <!-- Caption (if exists) -->
-              {% if post.caption %}
-              <p class="text-sm text-gray-800 mb-3 leading-relaxed">
-                {{ post.caption }}
-              </p>
-              {% endif %}
 
-              <!-- Media display -->
+              <!-- Caption and Media display -->
               {% if post.media and post.media_type == 'video' %}
+              <div class="caption-container mb-3">
+                <p class="post-caption text-sm text-gray-800 leading-relaxed" data-full-text="{{ post.caption }}">
+                {{ post.caption }}
+                </p>
+              </div>
               <div class="rounded-lg overflow-hidden bg-gray-100">
                 <a href="{{ post.media.url }}" class="post-media-link">
                   <video
@@ -278,6 +277,11 @@
                 </a>
               </div>
               {% elif post.media %}
+              <div class="caption-container mb-3">
+                <p class="post-caption text-sm text-gray-800 leading-relaxed" data-full-text="{{ post.caption }}">
+                {{ post.caption }}
+                </p>
+              </div>
               <div class="rounded-lg overflow-hidden bg-gray-100">
                 <a href="{{ post.media.url }}" class="post-media-link">
                   <img
@@ -289,12 +293,10 @@
               </div>
               {% else %}
               <!-- Text-only post styling -->
-              <div
-                class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border-l-4 border-blue-400"
-              >
-                <p class="text-sm font-medium text-blue-900">
+              <div class="bg-black mx-2 rounded-lg p-6 text-center">
+                <div class="post-caption text-[20px] font-bold text-blue-800 leading-relaxed" data-full-text="{{ post.caption }}">
                   {{ post.caption }}
-                </p>
+                </div>
               </div>
               {% endif %}
             </div>

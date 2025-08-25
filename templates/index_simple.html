@@ -177,16 +177,19 @@
         <hr class="border-black mb-2" />
 
         <div class="p-3">
-          <!-- Caption (if exists) -->
-          {% if post.caption %}
-          <p class="text-sm text-gray-800 mb-3 leading-relaxed">
-            {{ post.caption }}
-          </p>
-          {% endif %}
-
           <!-- Media display - either image or video -->
           {% if post.media and post.media_type == 'video' %}
-          <!-- Video post -->
+
+          <!-- Video post text -->
+          {% if post.caption %}
+          <div class="post-caption-container" data-post-id="{{ post.id }}">
+            <p class="post-caption text-sm text-gray-800 mb-3 leading-relaxed" data-full-text="{{ post.caption }}">
+              {{ post.caption }}
+            </p>
+          </div>
+          {% endif %}
+
+          <!-- Video post media -->
           <a href="{{ post.media.url }}" class="post-media-link">
             <video
               src="{{ post.media.url }}"
@@ -198,7 +201,17 @@
             </video>
           </a>
           {% elif post.media %}
-          <!-- Image post -->
+
+          <!-- Image post text -->
+          {% if post.caption %}
+          <div class="post-caption-container" data-post-id="{{ post.id }}">
+            <p class="post-caption text-sm text-gray-800 mb-3 leading-relaxed" data-full-text="{{ post.caption }}">
+              {{ post.caption }}
+            </p>
+          </div>
+          {% endif %}
+
+          <!-- Image post media -->
           <a href="{{ post.media.url }}" class="post-media-link">
             <img
               src="{{ post.media.url }}"
@@ -207,9 +220,10 @@
             />
           </a>
           {% else %}
+
           <!-- Text-only post -->
-          <div class="bg-black mx-2 rounded-lg p-6 text-center">
-            <p class="text-[20px] font-bold text-blue-800 leading-relaxed">
+          <div class="post-caption-container bg-black mx-2 rounded-lg p-6 text-center" data-post-id="{{ post.id }}">
+            <p class="post-caption text-[20px] font-bold text-blue-800 leading-relaxed" data-full-text="{{ post.caption }}">
               {{ post.caption }}
             </p>
           </div>

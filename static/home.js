@@ -650,48 +650,121 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Initialize optimized comment handler
   CommentHandler.init();
-});
 
-// Delete notification function
-function deleteNotification(notificationId) {
-  if (confirm("Are you sure you want to delete this notification?")) {
-    // Get CSRF token from the first form on the page
-    const csrfToken = document.querySelector(
-      'input[name="csrfmiddlewaretoken"]'
-    )?.value;
+  // Text truncation functionality for long captions
+  function initTextTruncation() {
+    const maxLength = 100; // Character limit before truncation (reduced for testing)
+    
+    const captions = document.querySelectorAll('.post-caption');
 
-    if (!csrfToken) {
-      alert("Security token not found. Please refresh the page and try again.");
-      return;
-    }
+    captions.forEach((caption, index) => {
+      if (!caption) return;
 
-    // Make AJAX request
-    fetch(`/notifications/delete/${notificationId}/`, {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": csrfToken,
-      },
-    })
-      .then((response) => {
-        if (response.ok) {
-          // Remove the notification element from the DOM with animation
-          const notificationElement = document.querySelector(
-            `[data-notification-id="${notificationId}"]`
-          );
-          if (notificationElement) {
-            notificationElement.style.transition = "opacity 0.3s ease";
-            notificationElement.style.opacity = "0";
-            setTimeout(() => {
-              notificationElement.remove();
-            }, 300);
-          }
-        } else {
-          alert("Failed to delete notification. Please try again.");
+      const fullText = caption.getAttribute('data-full-text') || caption.textContent.trim();
+      
+      // Only truncate if text is longer than maxLength
+      if (fullText.length > maxLength) {
+        const truncatedText = fullText.substring(0, maxLength);
+
+        // Check if already processed, i.e if there is already a see more button then skip
+        if (caption.querySelector('.see-more-btn')) {
+          return;
         }
-      })
-      .catch((error) => {
-        console.error("Error deleting notification:", error);
-        alert("Failed to delete notification. Please try again.");
-      });
+        
+        // Set initial truncated state
+        caption.innerHTML = truncatedText;
+        caption.classList.add('truncated');
+        
+        // Create see more button
+        const seeMoreBtn = document.createElement('button');
+        seeMoreBtn.className = 'see-more-btn';
+        seeMoreBtn.textContent = '... see more';
+        
+        // Create see less button  
+        const seeLessBtn = document.createElement('button');
+        seeLessBtn.className = 'see-less-btn';
+        seeLessBtn.textContent = ' see less';
+        seeLessBtn.style.display = 'none';
+        
+        // Add buttons after caption
+        caption.appendChild(seeMoreBtn);
+        caption.appendChild(seeLessBtn);
+        
+        console.log(`Added buttons to caption ${index}`);
+        
+        // See more functionality
+        seeMoreBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          caption.innerHTML = fullText;
+          caption.appendChild(seeLessBtn);
+          caption.classList.remove('truncated');
+          seeLessBtn.style.display = 'inline';
+        });
+        
+        // See less functionality
+        seeLessBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          caption.innerHTML = truncatedText;
+          caption.appendChild(seeMoreBtn);
+          caption.classList.add('truncated');
+          seeMoreBtn.style.display = 'inline';
+        });
+      } else {
+        console.log(`Caption ${index} too short for truncation (${fullText.length} chars)`);
+      }
+    });
   }
-}
+
+  // Initialize text truncation after DOM is loaded
+  initTextTruncation();
+  
+  // Make function available globally for testing
+  window.testTruncation = initTextTruncation;
+
+  // Delete notification function
+  function deleteNotification(notificationId) {
+    if (confirm("Are you sure you want to delete this notification?")) {
+      // Get CSRF token from the first form on the page
+      const csrfToken = document.querySelector(
+        'input[name="csrfmiddlewaretoken"]'
+      )?.value;
+
+      if (!csrfToken) {
+        alert("Security token not found. Please refresh the page and try again.");
+        return;
+      }
+
+      // Make AJAX request
+      fetch(`/notifications/delete/${notificationId}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+        },
+      })
+        .then((response) => {
+          if (response.ok) {
+            // Remove the notification element from the DOM with animation
+            const notificationElement = document.querySelector(
+              `[data-notification-id="${notificationId}"]`
+            );
+            if (notificationElement) {
+              notificationElement.style.transition = "opacity 0.3s ease";
+              notificationElement.style.opacity = "0";
+              setTimeout(() => {
+                notificationElement.remove();
+              }, 300);
+            }
+          } else {
+            alert("Failed to delete notification. Please try again.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error deleting notification:", error);
+          alert("Failed to delete notification. Please try again.");
+        });
+    }
+  }
+
+});
