@@ -168,3 +168,33 @@ body {
   max-height: 200px;
   overflow-y: auto;
 }
+
+/* Text truncation for long posts */
+.post-caption {
+  word-wrap: break-word;
+  line-height: 1.5;
+}
+
+.post-caption.truncated {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.see-more-btn, .see-less-btn {
+  color: #1877f2;
+  font-weight: 500;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 5px;
+  text-decoration: none;
+}
+
+.see-more-btn:hover, .see-less-btn:hover {
+  text-decoration: underline;
+}

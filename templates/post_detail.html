@@ -95,15 +95,13 @@
 
     <!-- Post Content -->
     <div class="p-3">
-      <!-- Caption (if exists) -->
-      {% if post.caption %}
-      <p class="text-sm text-gray-800 mb-4">
-        {{ post.caption }}
-      </p>
-      {% endif %}
-
-      <!-- Media display -->
+      <!-- Caption and Media display -->
       {% if post.media and post.media_type == 'video' %}
+      <div class="caption-container mb-3">
+        <p class="post-caption text-sm text-gray-800 leading-relaxed" data-full-text="{{ post.caption }}">
+                {{ post.caption }}
+        </p>
+      </div>
       <div class="rounded-lg overflow-hidden bg-gray-100">
         <video
           src="{{ post.media.url }}"
@@ -115,6 +113,11 @@
         </video>
       </div>
       {% elif post.media %}
+      <div class="caption-container mb-3">
+        <p class="post-caption text-sm text-gray-800 leading-relaxed" data-full-text="{{ post.caption }}">
+                {{ post.caption }}
+        </p>
+      </div>
       <div class="rounded-lg overflow-hidden bg-gray-100">
         <img
           src="{{ post.media.url }}"
@@ -127,9 +130,9 @@
       <div
         class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border-l-4 border-blue-400"
       >
-        <p class="text-sm font-medium text-blue-900">
+        <div class="post-caption text-sm font-medium text-blue-900" data-full-text="{{ post.caption }}">
           {{ post.caption }}
-        </p>
+        </div>
       </div>
       {% endif %}
     </div>
