@@ -690,7 +690,6 @@ document.addEventListener("DOMContentLoaded", function () {
         caption.appendChild(seeMoreBtn);
         caption.appendChild(seeLessBtn);
         
-        console.log(`Added buttons to caption ${index}`);
         
         // See more functionality
         seeMoreBtn.addEventListener('click', function(e) {

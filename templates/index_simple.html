@@ -179,18 +179,15 @@
         <div class="p-3">
           <!-- Media display - either image or video -->
           {% if post.media and post.media_type == 'video' %}
-
-          <!-- Video post text -->
+          <!-- Video post -->
           {% if post.caption %}
-          <div class="post-caption-container" data-post-id="{{ post.id }}">
-            <p class="post-caption text-sm text-gray-800 mb-3 leading-relaxed" data-full-text="{{ post.caption }}">
+          <div class="post-caption-container mb-3" data-post-id="{{ post.id }}">
+            <p class="post-caption text-sm text-gray-800 leading-relaxed" data-full-text="{{ post.caption }}">
               {{ post.caption }}
             </p>
           </div>
           {% endif %}
-
-          <!-- Video post media -->
-          <a href="{{ post.media.url }}" class="post-media-link">
+          <a href="{% url 'post_detail' post.id %}" class="post-media-link">
             <video
               src="{{ post.media.url }}"
               class="post-video"
@@ -201,18 +198,15 @@
             </video>
           </a>
           {% elif post.media %}
-
-          <!-- Image post text -->
+          <!-- Image post -->
           {% if post.caption %}
-          <div class="post-caption-container" data-post-id="{{ post.id }}">
-            <p class="post-caption text-sm text-gray-800 mb-3 leading-relaxed" data-full-text="{{ post.caption }}">
+          <div class="post-caption-container mb-3" data-post-id="{{ post.id }}">
+            <p class="post-caption text-sm text-gray-800 leading-relaxed" data-full-text="{{ post.caption }}">
               {{ post.caption }}
             </p>
           </div>
           {% endif %}
-
-          <!-- Image post media -->
-          <a href="{{ post.media.url }}" class="post-media-link">
+          <a href="{% url 'post_detail' post.id %}" class="post-media-link">
             <img
               src="{{ post.media.url }}"
               alt="{{ post.caption }}"
@@ -220,7 +214,6 @@
             />
           </a>
           {% else %}
-
           <!-- Text-only post -->
           <div class="post-caption-container bg-black mx-2 rounded-lg p-6 text-center" data-post-id="{{ post.id }}">
             <p class="post-caption text-[20px] font-bold text-blue-800 leading-relaxed" data-full-text="{{ post.caption }}">
