@@ -109,6 +109,40 @@ def create_unfollow_notification(following_user, follower_user):
         notification_type='unfollow'
     )
 
+def signup(request): 
+    signup_errors = []
+    signup_success = []
+    
+    if request.method == "POST":
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        password2 = request.POST.get("password2")
+        
+        if User.objects.filter(username=username).exists():
+            signup_errors.append("Username already exists.")
+           
+        if User.objects.filter(email=email).exists():
+            signup_errors.append("Email already exists.")
+            
+        if password != password2:
+            signup_errors.append("Passwords do not match.")
+            return render(request, "signup.html", {"signup_errors": signup_errors})
+        
+        # All validations passed
+        if password == password2:
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.save()
+
+            # Log the user in, but do NOT create a profile automatically
+            user_login = authenticate(username=username, password=password)
+            login(request, user_login)
+
+            signup_success.append(f"Account created successfully! Welcome {username}!")
+        return render(request, "signin.html", {"signup_success": signup_success})
+            
+    return render(request, "signup.html")
+
 def signin(request):
     signin_errors = []
     
@@ -132,42 +166,6 @@ def signin(request):
             return render(request, "signin.html", {"signin_errors": signin_errors})
     
     return render(request, "signin.html")
-
-def signup(request): 
-    signup_errors = []
-    signup_success = []
-    
-    if request.method == "POST":
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-        password2 = request.POST.get("password2")
-        
-        if User.objects.filter(username=username).exists():
-            signup_errors.append("Username already exists.")
-            return render(request, "signup.html", {"signup_errors": signup_errors})
-        if User.objects.filter(email=email).exists():
-            signup_errors.append("Email already exists.")
-            return render(request, "signup.html", {"signup_errors": signup_errors})
-        if password != password2:
-            signup_errors.append("Passwords do not match.")
-            return render(request, "signup.html", {"signup_errors": signup_errors})
-        
-        # All validations passed
-        if password == password2:
-            user = User.objects.create_user(username=username, email=email, password=password)
-            user.save()
-
-            # Create a profile for the new user
-            user_login = authenticate(username=username, password=password)
-            login(request, user_login)
-
-            # Create profile only if it doesn't exist
-            profile, created = Profile.objects.get_or_create(user=user)
-            signup_success.append(f"Account created successfully! Welcome {username}!")
-            return render(request, "signin.html", {"signup_success": signup_success})
-            
-    return render(request, "signup.html")
 
 @login_required(login_url='signin')
 def layout(request):
@@ -383,21 +381,41 @@ def saved(request):
 
 @login_required(login_url='signin')
 def settings(request):
-    user_profile, created = Profile.objects.get_or_create(user=request.user)
+    try:
+        user_profile = Profile.objects.get(user=request.user)
+    except Profile.DoesNotExist:
+        user_profile = None
+
     if request.method == "POST":
         works_at = request.POST.get("works_at")
         occupation = request.POST.get("occupation")
         bio = request.POST.get("bio")
         location = request.POST.get("location")
-        if request.FILES.get("image"):
-            user_profile.profilepic = request.FILES["image"]
-        if request.FILES.get("cover_photo"):
-            user_profile.cover_photo = request.FILES["cover_photo"]
-        user_profile.works_at = works_at
-        user_profile.occupation = occupation
-        user_profile.bio = bio
-        user_profile.location = location
-        user_profile.save()
+        profilepic = request.FILES.get("image")
+        cover_photo = request.FILES.get("cover_photo")
+
+        # a user creating a new profile if it doesn't exist
+        if not user_profile:
+            user_profile = Profile.objects.create(
+                user=request.user,
+                works_at=works_at,
+                occupation=occupation,
+                bio=bio,
+                location=location,
+                profilepic=profilepic if profilepic else "blank-profile-picture.png",
+                cover_photo=cover_photo if cover_photo else ""
+            )
+        # If the profile already exists, update the fields
+        else:
+            if profilepic:
+                user_profile.profilepic = profilepic
+            if cover_photo:
+                user_profile.cover_photo = cover_photo
+            user_profile.works_at = works_at
+            user_profile.occupation = occupation
+            user_profile.bio = bio
+            user_profile.location = location
+            user_profile.save()
         messages.success(request, "Profile updated successfully!")
         return redirect('settings')
     return render(request, "setting.html", {"user_profile": user_profile})

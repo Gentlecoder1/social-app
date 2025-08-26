@@ -71,7 +71,7 @@
           {% endif %}
 
           <!-- Sign Up Form -->
-          <form action="" method="POST" class="space-y-5">
+          <form action="{% url 'signup' %}" method="POST" class="space-y-5">
             {% csrf_token %}
             <div>
               <label
@@ -170,7 +170,7 @@
             </div>
 
             <!-- Terms and Conditions -->
-            <div class="flex items-start">
+            {% comment %} <div class="flex items-start">
               <div class="flex items-center h-5">
                 <input
                   id="terms"
@@ -192,7 +192,7 @@
                   >
                 </label>
               </div>
-            </div>
+            </div> {% endcomment %}
 
             <button
               type="submit"
