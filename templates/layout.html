@@ -262,28 +262,27 @@
           <h3 class="font-semibold mb-3 text-[17px] text-[#65676b]">
             Friends You can follow
           </h3>
-          {% for suggestion in suggestions %}
           <div class="grid grid-cols-3 gap-3">
-            <div class="text-center">
+          {% for suggestion in suggestions %}
+            <div class="text-center items-center justify-center">
               <div
-                class="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mx-auto mb-2 relative"
+                class="w-20 h-20 rounded-full bg-gray-300 flex mx-auto mb-1 relative"
               >
                 <a href="{% url 'profile' suggestion.username %}">
                   <img
                     src="{% if suggestion.profile.profilepic and suggestion.profile.profilepic.url %}{{ suggestion.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
-                    class="bg-gray-600 rounded-full w-30 h-30 object-cover hover:border-4 hover:border-blue-500"
+                    class="bg-gray-600 rounded-full w-20 h-20 object-cover hover:border-4 hover:border-blue-500"
                   />
                 </a>
-                <div class="active-dot"></div>
               </div>
-              <p class="text-[23px]">{{ suggestion.username }}</p>
+              <p class="text-[18px]">{{ suggestion.username }}</p>
             </div>
-            {% empty %}
+          {% empty %}
             <div class="flex items-center justify-center py-6 text-secondary">
               <p>No suggestions available</p>
             </div>
-          </div>
           {% endfor %}
+          </div>
         </div>
       </aside>
     </div>
