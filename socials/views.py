@@ -157,10 +157,7 @@ def signin(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            if Profile.objects.filter(user=user).exists():
-                return redirect('new_home')
-            else:
-                return redirect('settings')
+            return redirect('new_home')
         else:
             signin_errors.append("Invalid login details.")
             return render(request, "signin.html", {"signin_errors": signin_errors})

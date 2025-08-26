@@ -1,4 +1,52 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Long text modal for upload
+  const openLongTextModal = document.getElementById('openLongTextModal');
+  const longTextModal = document.getElementById('longTextModal');
+  const modalTextarea = document.getElementById('modalTextarea');
+  const saveLongText = document.getElementById('saveLongText');
+  const cancelLongText = document.getElementById('cancelLongText');
+  const captionTextarea = document.getElementById('caption-textarea');
+  const captionPreview = document.getElementById('captionPreview');
+
+  if (openLongTextModal && longTextModal && modalTextarea && saveLongText && cancelLongText && captionTextarea && captionPreview) {
+    // Open modal and load current value
+    openLongTextModal.addEventListener('click', function() {
+      modalTextarea.value = captionTextarea.value;
+      longTextModal.style.display = 'flex';
+      modalTextarea.focus();
+    });
+    // Save and close modal
+    saveLongText.addEventListener('click', function() {
+      captionTextarea.value = modalTextarea.value;
+      captionPreview.textContent = modalTextarea.value ? modalTextarea.value.substring(0, 60) + (modalTextarea.value.length > 60 ? '...' : '') : "What's on your mind?";
+      longTextModal.style.display = 'none';
+    });
+    // Cancel and close modal
+    cancelLongText.addEventListener('click', function() {
+      longTextModal.style.display = 'none';
+    });
+    // Optional: close modal on outside click
+    longTextModal.addEventListener('click', function(e) {
+      if (e.target === longTextModal) {
+        longTextModal.style.display = 'none';
+      }
+    });
+  }
+  // Show special button for long text in upload form
+  const captionInput = document.getElementById('caption-textarea');
+  const longTextBtn = document.getElementById('longTextBtn');
+  if (captionInput && longTextBtn) {
+    captionInput.addEventListener('input', function() {
+      if (captionInput.value.length > 300) {
+        longTextBtn.style.display = 'inline-block';
+      } else {
+        longTextBtn.style.display = 'none';
+      }
+    });
+    longTextBtn.addEventListener('click', function() {
+      alert('Special action for long text!');
+    });
+  }
   // Page preloading for faster navigation
   const prefetchPages = ["/search", "/profile/", "/settings"];
 
@@ -65,25 +113,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to handle file preview
   function handleFilePreview(file, inputId) {
-    const previewContainer = document.getElementById("file-preview-container");
-    const captionTextarea = document.querySelector('textarea[name="caption"]');
+    // Find the contentPreview div
+    const contentPreview = document.querySelector('.contentPreview');
+    let container = document.getElementById("file-preview-container");
 
-    if (!previewContainer) {
+    if (!container) {
       // Create preview container if it doesn't exist
-      const container = document.createElement("div");
+      container = document.createElement("div");
       container.id = "file-preview-container";
-      container.className = "mt-3 p-3 border rounded-lg bg-gray-50 relative";
-
-      // Insert after caption textarea
-      if (captionTextarea) {
-        captionTextarea.parentNode.insertBefore(
-          container,
-          captionTextarea.nextSibling
-        );
+      container.className = "mt-3 p-3 border rounded-lg bg-gray-50 relative w-full";
+      // Insert as the last child of contentPreview
+      if (contentPreview) {
+        contentPreview.appendChild(container);
       }
     }
-
-    const container = document.getElementById("file-preview-container");
 
     // Clear previous preview
     container.innerHTML = "";

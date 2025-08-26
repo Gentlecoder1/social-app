@@ -15,7 +15,7 @@
       <form action="upload" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="p-4">
-          <div class="flex items-center">
+          <div class="flex">
             <div
               class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
             >
@@ -25,14 +25,32 @@
                 class="rounded-full w-full h-full object-cover"
               />
             </div>
-            <textarea
-              name="caption"
-              id=""
-              class="flex-1 bg-[#f0f2f5] text-center rounded-full py-2 px-4 focus:outline-none text-[15px]"
-              placeholder="What's on your mind?"
-            ></textarea>
+            <div class="contentPreview flex-1 flex-row">
+              <!-- Button-like field to open modal -->
+              <div id="openLongTextModal" class="flex-1 bg-[#f0f2f5] text-center rounded-full py-2 px-4 focus:outline-none text-[15px] cursor-pointer text-gray-500" style="min-height:38px;display:flex;align-items:center;justify-content:center;">
+                <span id="captionPreview">What's on your mind?</span>
+              </div>
+            </div>
+
+            <!-- Hidden textarea to hold the value for form submission -->
+            <textarea name="caption" id="caption-textarea" style="display:none;"></textarea>
+
+            <!-- Modal for long text input -->
+            <div id="longTextModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="display:none;">
+              <div class="bg-white rounded-lg p-6 w-full max-w-xl shadow-lg flex flex-col">
+                <h2 class="text-lg font-bold mb-2">Write your post</h2>
+
+                <textarea id="modalTextarea" class="w-full h-48 border rounded p-2 mb-4" placeholder="What's on your mind?"></textarea>
+                
+                <div class="flex justify-end gap-2">
+                  <button id="cancelLongText" type="button" class="px-4 py-2 rounded bg-gray-300">Cancel</button>
+                  <button id="saveLongText" type="button" class="px-4 py-2 rounded bg-blue-600 text-white">Save</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+        <!-- media option -->
         <div class="border-t border-[#dadde1] p-2 flex justify-between px-4">
           <!-- Upload picture -->
           <div class="relative">
@@ -73,7 +91,7 @@
           </div>
 
           <button
-            class="button bg-blue-700 px-4 py-2 rounded-2xl"
+            class="button bg-blue-700 px-4 py-1 rounded-2xl"
             type="submit"
           >
             Upload
