@@ -125,7 +125,7 @@ from django.dispatch import receiver
 def create_user_profile(sender, instance, created, **kwargs):
     """Automatically create a Profile when a new User is created"""
     if created:
-        Profile.objects.create(user=instance)
+        Profile.objects.get_or_create(user=instance)
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):

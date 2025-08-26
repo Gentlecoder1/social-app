@@ -70,29 +70,29 @@ AUTHENTICATION_BACKENDS = [
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Using SQLite for local development (simple and reliable)
+# Using Supabase PostgreSQL database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('SUPABASE_DB_NAME'),
+        'USER': os.getenv('SUPABASE_DB_USER'),
+        'PASSWORD': os.getenv('SUPABASE_DB_PASSWORD'),
+        'HOST': os.getenv('SUPABASE_DB_HOST'),
+        'PORT': os.getenv('SUPABASE_DB_PORT', '5432'),
+        'OPTIONS': {
+            'connect_timeout': 10,
+            'options': '-c default_transaction_isolation=read_committed'
+        },
+        'CONN_MAX_AGE': 0,
+        'ATOMIC_REQUESTS': True,
     }
 }
 
-# Uncomment below for Supabase PostgreSQL when ready to deploy
+# SQLite configuration (for backup purposes)
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv('SUPABASE_DB_NAME'),
-#         'USER': os.getenv('SUPABASE_DB_USER'),
-#         'PASSWORD': os.getenv('SUPABASE_DB_PASSWORD'),
-#         'HOST': os.getenv('SUPABASE_DB_HOST'),
-#         'PORT': os.getenv('SUPABASE_DB_PORT', '5432'),
-#         'OPTIONS': {
-#             'connect_timeout': 10,
-#             'options': '-c default_transaction_isolation=read_committed'
-#         },
-#         'CONN_MAX_AGE': 0,
-#         'ATOMIC_REQUESTS': True,
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
 

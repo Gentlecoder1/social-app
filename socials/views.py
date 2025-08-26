@@ -162,7 +162,8 @@ def signup(request):
             user_login = authenticate(username=username, password=password)
             login(request, user_login)
 
-            Profile.objects.create(user=user)
+            # Create profile only if it doesn't exist
+            profile, created = Profile.objects.get_or_create(user=user)
             signup_success.append(f"Account created successfully! Welcome {username}!")
             return render(request, "signin.html", {"signup_success": signup_success})
             
