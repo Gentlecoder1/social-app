@@ -108,7 +108,7 @@
         </p>
       </div>
       {% endif %}
-      <a href="{% url 'post' post.id %}" class="post-media-link">
+      <a href="{% url 'post' post.id %}" class="post-media-link flex justify-center">
         <video
           src="{{ post.media.url }}"
           class="post-video"
@@ -127,7 +127,7 @@
         </p>
       </div>
       {% endif %}
-      <a href="{% url 'post' post.id %}" class="post-media-link">
+      <a href="{% url 'post' post.id %}" class="post-media-link flex justify-center ">
         <img
           src="{{ post.media.url }}"
           alt="{{ post.caption }}"

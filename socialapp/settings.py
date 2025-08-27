@@ -22,13 +22,14 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'socials',  # Your custom app
+    'django.contrib.admin',
 ]
 
 MIDDLEWARE = [
@@ -87,6 +88,9 @@ DATABASES = {
         'ATOMIC_REQUESTS': True,
     }
 }
+
+# Use Supabase storage backend for media files
+DEFAULT_FILE_STORAGE = "storages.supabase_storage.SupabaseStorage"
 
 # SQLite configuration (for backup purposes)
 # DATABASES = {
@@ -177,8 +181,8 @@ if DEBUG:
     }
     
 # Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # CSRF Configuration
 CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
