@@ -19,7 +19,7 @@
               class="bg-gradient-to-tr from-yellow-600 to-pink-600 p-0.5 rounded-full"
             >
               <img
-                src="{% if post.user.profile.profilepic and post.user.profile.profilepic.url %}{{ post.user.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                src="{% if post.user.profile.profilepic %}{{ post.user.profile.profilepic }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
                 alt="Profile Image"
                 class="bg-gray-200 border border-white rounded-full w-8 h-8"
               />
@@ -221,7 +221,7 @@
             class="w-8 h-8 rounded-full border-2 border-blue-600 relative flex-shrink-0"
           >
             <img
-              src="{% if comment.username.profile.profilepic and comment.username.profile.profilepic.url %}{{ comment.username.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+              src="{% if comment.username.profile.profilepic %}{{ comment.username.profile.profilepic }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
               alt="Profile Image"
               class="h-full rounded-full w-full object-cover"
             />

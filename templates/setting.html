@@ -212,7 +212,7 @@
                 >
                   <img
                     class="w-full h-full rounded-full object-cover"
-                    src="{% if user_profile.profilepic and user_profile.profilepic.url %}{{ user_profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                    src="{% if user_profile.profilepic %}{{ user_profile.profilepic }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
                     alt="Profile Picture"
                   />
                   <div class="upload-overlay rounded-full">

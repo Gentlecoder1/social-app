@@ -12,10 +12,10 @@
     <main class="-mt-4">
       <!-- Profile Header -->
       <div class="profile-header w-full h-[400px]">
-        {% if user_profile.cover_photo and user_profile.cover_photo.url %}
-        <a href="{{ user_profile.cover_photo.url }}">
+        {% if user_profile.cover_photo %}
+        <a href="{{ user_profile.cover_photo }}">
           <img
-            src="{{ user_profile.cover_photo.url }}"
+            src="{{ user_profile.cover_photo }}"
             alt="Cover Photo"
             class="w-full h-full object-cover"
           />
@@ -48,9 +48,9 @@
         {% endif %}
         <!-- Profile Avatar -->
         <div class="profile-avatar">
-          <a href="{{ user_profile.profilepic.url }}">
+          <a href="{{ user_profile.profilepic }}">
             <img
-              src="{% if user_profile.profilepic and user_profile.profilepic.url %}{{ user_profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+              src="{% if user_profile.profilepic %}{{ user_profile.profilepic }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
               alt="{{user_profile.user.username}}"
               class="bg-black w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-white shadow-xl"
             />

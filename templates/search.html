@@ -67,7 +67,7 @@
                   class="bg-gradient-to-tr from-yellow-600 to-pink-600 p-0.5 rounded-full"
                 >
                   <img
-                    src="{% if users.profilepic and users.profilepic.url %}{{ users.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                    src="{% if users.profilepic %}{{ users.profilepic }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
                     alt="Profile Image"
                     class="bg-gray-200 border-2 border-white rounded-full w-14 h-14 object-cover"
                   />

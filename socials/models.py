@@ -11,9 +11,20 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     works_at = models.CharField(max_length=100, blank=True)
     occupation = models.CharField(max_length=100, blank=True)
-    bio = models.TextField(blank=True) 
-    profilepic = models.ImageField(upload_to='profile_pics/', default='blank-profile-picture.png')
-    cover_photo = models.ImageField(upload_to='cover_photos/', blank=True, null=True)
+    bio = models.TextField(blank=True)
+
+    # Just store the Supabase URL to the images
+    # Use `profilepic` to match the existing DB column and codebase
+    profilepic = models.URLField(
+        max_length=500,
+        default="profile_pics/blank-profile-picture.png"
+    )
+    cover_photo = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True
+    )
+
     location = models.CharField(max_length=100, blank=True)
     saved_posts = models.ManyToManyField('Post', blank=True, related_name='saved_by')
 
@@ -39,7 +50,11 @@ class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     caption = models.TextField()
-    media = models.FileField(upload_to='post_media/', validators=[validate_media_file], null=True, blank=True)
+
+    # Store only the Supabase public URL or path
+    # Use `media` so code that sets `post.media = <url>` continues to work
+    media = models.URLField(max_length=500, blank=True, null=True)
+
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)  # Add index for ordering
     no_of_likes = models.IntegerField(default=0)

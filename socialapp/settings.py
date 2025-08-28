@@ -6,10 +6,6 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-+%o9!i195+gxmy#+7hagb$wo#*=zx@^$#%rn^3y%a82j3pl!^2'
 
@@ -18,9 +14,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
-
 INSTALLED_APPS = [
 
     'django.contrib.auth',
@@ -67,10 +61,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 # Using Supabase PostgreSQL database
 DATABASES = {
     'default': {
@@ -89,8 +79,23 @@ DATABASES = {
     }
 }
 
-# Use Supabase storage backend for media files
-DEFAULT_FILE_STORAGE = "storages.supabase_storage.SupabaseStorage"
+# Media files (for temporary storage before Supabase upload)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Use default storage for temporary files, not Supabase storage
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+# Supabase Storage Configuration
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_KEY')
+SUPABASE_BUCKET_NAME = os.getenv('SUPABASE_BUCKET_NAME', 'media')
+
+SUPABASE_BUCKETS = {
+    "profile_pics": "profile_pics/",
+    "cover_photos": "cover_photos/",
+    "post_media": "post_media/"
+}
 
 # SQLite configuration (for backup purposes)
 # DATABASES = {
@@ -179,10 +184,6 @@ if DEBUG:
             },
         },
     }
-    
-# Media files
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # CSRF Configuration
 CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
