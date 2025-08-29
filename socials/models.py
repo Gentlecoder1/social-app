@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 import uuid
 import os
+from cloudinary.models import CloudinaryField
 from datetime import datetime
 
 # Profile model linked to Django User
@@ -12,8 +13,8 @@ class Profile(models.Model):
     works_at = models.CharField(max_length=100, blank=True)
     occupation = models.CharField(max_length=100, blank=True)
     bio = models.TextField(blank=True) 
-    profilepic = models.ImageField(upload_to='profile_pics/', default='blank-profile-picture.png')
-    cover_photo = models.ImageField(upload_to='cover_photos/', blank=True, null=True)
+    profilepic = CloudinaryField('profilepic', folder='profile_pics', default='https://res.cloudinary.com/dou9magab/image/upload/v1756479692/user2_pd3xii.jpg')
+    cover_photo = CloudinaryField('cover_photo', folder='cover_photos', blank=True, null=True)
     location = models.CharField(max_length=100, blank=True)
     saved_posts = models.ManyToManyField('Post', blank=True, related_name='saved_by')
 
@@ -39,7 +40,7 @@ class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     caption = models.TextField()
-    media = models.FileField(upload_to='post_media/', validators=[validate_media_file], null=True, blank=True)
+    media = CloudinaryField('media', folder='post_media', validators=[validate_media_file], null=True, blank=True)
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)  # Add index for ordering
     no_of_likes = models.IntegerField(default=0)

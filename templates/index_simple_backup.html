@@ -20,7 +20,7 @@
               class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
             >
               <img
-                src="{{ user.profile.profilepic.url }}"
+                src="{% if user.profile.profilepic %}{{ user.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
                 alt="Profile Picture"
                 class="rounded-full w-full h-full object-cover"
               />
@@ -100,7 +100,7 @@
                   class="bg-gradient-to-tr from-yellow-600 to-pink-600 p-0.5 rounded-full"
                 >
                   <img
-                    src="{% if post.user.profile.profilepic and post.user.profile.profilepic.url %}{{ post.user.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                    src="{% if post.user.profile.profilepic %}{{ post.user.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
                     alt="Profile Image"
                     class="bg-gray-200 border border-white rounded-full w-8 h-8"
                   />

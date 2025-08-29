@@ -69,7 +69,7 @@
           <div class="relative">
             <button id="profileButton">
               <img
-                src="{{ user.profile.profilepic.url }}"
+                src="{% if user.profile.profilepic and user.profile.profilepic.url %}{{ user.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
                 class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center"
               />
             </button>

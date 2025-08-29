@@ -20,7 +20,7 @@
               class="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center mr-3"
             >
               <img
-                src="{{ user.profile.profilepic.url }}"
+                src="{% if user.profile.profilepic %}{{ user.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
                 alt="Profile Picture"
                 class="rounded-full w-full h-full object-cover"
               />
