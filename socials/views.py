@@ -8,6 +8,8 @@ from .models import Profile, Post, LikePost, Comment, Follow, Notification
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 import random
+from .utils import logger
+from .utils import upload_to_supabase, cleanup_temp_file, generate_unique_filename, get_bucket_folder
 
 def get_shared_context(user):
     """Get shared context data for suggestions and notifications."""
@@ -241,53 +243,46 @@ def logout(request):
     auth_logout(request)
     return redirect('signin')
 
-@login_required(login_url='signin')
+@login_required(login_url="signin")
 def upload(request):
     if request.method == "POST":
-        print("DEBUG: Upload POST request received")
-        user = request.user.username
+        logger.debug("Upload POST request received")
         caption = request.POST.get("caption", "").strip()
         media_file = request.FILES.get("image_upload") or request.FILES.get("video_upload")
-        
-        print(f"DEBUG: Caption: '{caption}'")
-        print(f"DEBUG: Media file: {media_file}")
-        print(f"DEBUG: request.FILES: {request.FILES}")
 
         # Validate file size (12MB limit)
         if media_file and media_file.size > 12 * 1024 * 1024:
-            messages.error(request, "File size too large. Please select a file smaller than 10MB.")
-            return redirect('new_home')
+            messages.error(request, "File size too large. Please select a file smaller than 12MB.")
+            return redirect("new_home")
 
-        # Check if there's content to post (caption or media)
+        # Check if there’s content
         if caption or media_file:
             try:
-                new_post = Post.objects.create(
-                    user=request.user, 
-                    caption=caption, 
-                    media=media_file
-                )
-                print(f"DEBUG: Post created successfully. ID: {new_post.id}, Media: {new_post.media}")
-                
-                # Create notifications for followers
-                create_post_notification(new_post)
-                
+                public_url = None
                 if media_file:
-                    messages.success(request, f"Post with {new_post.media_type} uploaded successfully!")
-                else:
-                    messages.success(request, "Post uploaded successfully!")
-                    
-            except ValidationError as e:
-                print(f"DEBUG: ValidationError: {str(e)}")
-                messages.error(request, f"Upload failed: {str(e)}")
+                    # ✅ Now handled by utils (no need to manually build path)
+                    public_url = upload_to_supabase(media_file, "post")
+
+                new_post = Post.objects.create(
+                    user=request.user,
+                    caption=caption,
+                    media=public_url,   # Supabase URL string
+                )
+
+                logger.info(f"Post created: {new_post.id}, Media: {new_post.media}")
+
+                create_post_notification(new_post)
+
+                messages.success(request, "Post uploaded successfully!")
+
             except Exception as e:
-                print(f"DEBUG: Exception: {str(e)}")
+                logger.error(f"Upload failed: {str(e)}")
                 messages.error(request, "An error occurred while uploading. Please try again.")
-                
         else:
-            print("DEBUG: No caption or media file provided")
             messages.error(request, "Please write something or select a file to upload.")
-        
-        return redirect('new_home')
+
+        return redirect("new_home")
+
     return render(request, "upload.html")
 
 @login_required(login_url='signin')
@@ -481,7 +476,8 @@ def comment(request):
                 "username": new_comment.username.username,
                 "comment": new_comment.comment,
                 "created_at": new_comment.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                "profile_pic": user_profile.profilepic.url if user_profile.profilepic else "/media/profile_pics/blank-profile-picture.png"
+                # profilepic is a URL string now
+                "profile_pic": user_profile.profilepic if user_profile.profilepic else "/media/profile_pics/blank-profile-picture.png"
                 
             }
         }
