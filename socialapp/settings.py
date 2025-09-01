@@ -9,6 +9,10 @@ import cloudinary.api
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-+%o9!i195+gxmy#+7hagb$wo#*=zx@^$#%rn^3y%a82j3pl!^2'
 
@@ -17,16 +21,31 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# Application definition
-INSTALLED_APPS = [
 
+# Application definition
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'socials',  # Your custom app
+    'cloudinary',
+    'cloudinary_storage',
 ]
+
+# Cloudinary configuration
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+}
+
+# Supabase configuration
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_KEY')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -63,6 +82,10 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+
+# Database
+# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+
 # Using Supabase PostgreSQL database
 DATABASES = {
     'default': {
@@ -80,22 +103,6 @@ DATABASES = {
         'ATOMIC_REQUESTS': True,
     }
 }
-
-
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Tell Django to use Cloudinary for media storage
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-import cloudinary
-cloudinary.config(
-    cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
-    api_key = os.getenv('CLOUDINARY_API_KEY'),
-    api_secret = os.getenv('CLOUDINARY_API_SECRET'),
-    secure = True
-)
 
 # SQLite configuration (for backup purposes)
 # DATABASES = {
@@ -187,7 +194,7 @@ if DEBUG:
     
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # CSRF Configuration
 CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS

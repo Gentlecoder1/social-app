@@ -19,7 +19,7 @@
               class="bg-gradient-to-tr from-yellow-600 to-pink-600 p-0.5 rounded-full"
             >
               <img
-                src="{% if post.user.profile.profilepic %}{{ post.user.profile.profilepic }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
+                src="{% if post.user.profile.profilepic and post.user.profile.profilepic.url %}{{ post.user.profile.profilepic.url }}{% else %}/media/profile_pics/blank-profile-picture.png{% endif %}"
                 alt="Profile Image"
                 class="bg-gray-200 border border-white rounded-full w-8 h-8"
               />
@@ -100,59 +100,51 @@
     <div class="">
       <!-- Media display - either image or video -->
       {% if post.media and post.media_type == 'video' %}
-      <!-- Video post -->
-      {% if post.caption %}
-      <div class="post-caption-container mb-3" data-post-id="{{ post.id }}">
-        <p class="post-caption text-sm text-gray-800 leading-relaxed" data-full-text="{{ post.caption }}">
-          {{ post.caption }}
-        </p>
-      </div>
-      {% endif %}
-<<<<<<< HEAD
-      <a href="{% url 'post' post.id %}" class="post-media-link">
-        {% if post.media and post.media.url %}
-=======
-  <a href="{% url 'post' post.id %}" class="post-media-link">
->>>>>>> 50984649b0132e7f555de25c84933c5cc96f9ba5
-        <video
-          src="{{ post.media.url }}"
-          class="post-video"
-          controls
-          preload="metadata"
-        >
-          Your browser does not support the video tag.
-        </video>
+        <!-- Video post -->
+        {% if post.caption %}
+        <div class="post-caption-container mb-3" data-post-id="{{ post.id }}">
+          <p class="post-caption text-sm text-gray-800 leading-relaxed" data-full-text="{{ post.caption }}">
+            {{ post.caption }}
+          </p>
+        </div>
         {% endif %}
-      </a>
+        <a href="{% url 'post' post.id %}" class="post-media-link">
+          {% if post.media and post.media.url %}
+            <video
+              src="{{ post.media.url }}"
+              class="post-video"
+              controls
+              preload="metadata"
+            >
+              Your browser does not support the video tag.
+            </video>
+          {% endif %}
+        </a>
       {% elif post.media %}
-      <!-- Image post -->
-      {% if post.caption %}
-      <div class="post-caption-container mb-3" data-post-id="{{ post.id }}">
-        <p class="post-caption text-sm text-gray-800 leading-relaxed" data-full-text="{{ post.caption }}">
-          {{ post.caption }}
-        </p>
-      </div>
-      {% endif %}
-<<<<<<< HEAD
-      <a href="{% url 'post' post.id %}" class="post-media-link">
-        {% if post.media and post.media.url %}
-=======
-  <a href="{% url 'post' post.id %}" class="post-media-link">
->>>>>>> 50984649b0132e7f555de25c84933c5cc96f9ba5
-        <img
-          src="{{ post.media.url }}"
-          alt="{{ post.caption }}"
-          class="post-image"
-        />
+        <!-- Image post -->
+        {% if post.caption %}
+        <div class="post-caption-container mb-3" data-post-id="{{ post.id }}">
+          <p class="post-caption text-sm text-gray-800 leading-relaxed" data-full-text="{{ post.caption }}">
+            {{ post.caption }}
+          </p>
+        </div>
         {% endif %}
-      </a>
+        <a href="{% url 'post' post.id %}" class="post-media-link">
+          {% if post.media and post.media.url %}
+            <img
+              src="{{ post.media.url }}"
+              alt="{{ post.caption }}"
+              class="post-image"
+            />
+          {% endif %}
+        </a>
       {% else %}
-      <!-- Text-only post -->
-      <div class="post-caption-container bg-black rounded-lg p-3 sm:p-6 text-center" data-post-id="{{ post.id }}">
-        <p class="post-caption text-[14px] sm:text-[19px] font-bold text-blue-800 leading-relaxed" data-full-text="{{ post.caption }}">
-          {{ post.caption }}
-        </p>
-      </div>
+        <!-- Text-only post -->
+        <div class="post-caption-container bg-black rounded-lg p-3 sm:p-6 text-center" data-post-id="{{ post.id }}">
+          <p class="post-caption text-[14px] sm:text-[19px] font-bold text-blue-800 leading-relaxed" data-full-text="{{ post.caption }}">
+            {{ post.caption }}
+          </p>
+        </div>
       {% endif %}
     </div>
   </div>
