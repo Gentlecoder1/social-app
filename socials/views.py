@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 import random
 from .utils import logger
-from .utils import upload_to_supabase, cleanup_temp_file, generate_unique_filename, get_bucket_folder
+
 
 def get_shared_context(user):
     """Get shared context data for suggestions and notifications."""
@@ -258,15 +258,10 @@ def upload(request):
         # Check if there’s content
         if caption or media_file:
             try:
-                public_url = None
-                if media_file:
-                    # ✅ Now handled by utils (no need to manually build path)
-                    public_url = upload_to_supabase(media_file, "post")
-
                 new_post = Post.objects.create(
                     user=request.user,
                     caption=caption,
-                    media=public_url,   # Supabase URL string
+                    media=media_file if media_file else None,
                 )
 
                 logger.info(f"Post created: {new_post.id}, Media: {new_post.media}")
