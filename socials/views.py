@@ -11,6 +11,9 @@ import random
 from django.core.mail import send_mail
 from .utils import logger
 from django.views.decorators.csrf import csrf_exempt
+# Send OTP
+from django.template.loader import render_to_string
+from django.core.mail import EmailMessage
 
 def get_shared_context(user):
     """Get shared context data for suggestions and notifications."""
@@ -115,33 +118,41 @@ def create_unfollow_notification(following_user, follower_user):
 
 def signup(request):
     signup_errors = []
-    
+
     if request.method == "POST":
         username = request.POST.get("username")
         email = request.POST.get("email")
         password = request.POST.get("password")
         password2 = request.POST.get("password2")
 
+        # Validation checks
         if User.objects.filter(username=username).exists():
             signup_errors.append("Username already exists.")
-           
         if User.objects.filter(email=email).exists():
             signup_errors.append("Email already exists.")
         if password != password2:
             signup_errors.append("Passwords do not match.")
+
         if signup_errors:
             return render(request, "signup.html", {"signup_errors": signup_errors})
 
         # All validations passed: create user as inactive
-        user = User.objects.create_user(username=username, email=email, password=password, is_active=False)
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            is_active=False
+        )
         user.save()
 
         # Generate OTP and send to email using HTML template
         otp = str(random.randint(100000, 999999))
         request.session['otp'] = otp
         request.session['otp_email'] = email
+
         from django.template.loader import render_to_string
         from django.core.mail import EmailMessage
+
         html_message = render_to_string('emails/otp_email.html', {'otp': otp})
         email_message = EmailMessage(
             subject="Your OTP Code",
@@ -151,8 +162,10 @@ def signup(request):
         )
         email_message.content_subtype = "html"  # Send as HTML
         email_message.send()
+
         # Redirect to verify_otp page
         return render(request, "verify_otp.html", {"email": email})
+
     return render(request, "signup.html")
 
 @csrf_exempt
@@ -182,9 +195,13 @@ def verify_otp(request):
     if request.method == "GET":
         email = request.session.get('otp_email')
         otp_verified = request.session.get('otp_verified')
-        # if not email:
-        #     # If session is cleared, show a message instead of redirecting
-        #     return render(request, "verify_otp.html", {"email": None, "session_expired": True})
+        # If session email missing, try to recover from logged-in user
+        if not email and request.user.is_authenticated and not request.user.is_active:
+            email = request.user.email
+            request.session['otp_email'] = email
+        # If still no email, show session expired
+        if not email:
+            return render(request, "verify_otp.html", {"email": None, "session_expired": True})
         if otp_verified:
             return render(request, "verify_otp.html", {"email": email, "verified": True, "session_expired": False})
         return render(request, "verify_otp.html", {"email": email, "session_expired": False})
