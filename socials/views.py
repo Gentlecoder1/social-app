@@ -506,6 +506,14 @@ def comment(request):
         user_profile, created = Profile.objects.get_or_create(user=request.user)
         
         # Return the comment data for AJAX response
+        # Always serialize profilepic as a URL string
+        if user_profile.profilepic:
+            if hasattr(user_profile.profilepic, 'url'):
+                profile_pic_url = user_profile.profilepic.url
+            else:
+                profile_pic_url = str(user_profile.profilepic)
+        else:
+            profile_pic_url = "/media/profile_pics/blank-profile-picture.png"
         comment_data = {
             "success": True,
             "comment": {
@@ -513,9 +521,7 @@ def comment(request):
                 "username": new_comment.username.username,
                 "comment": new_comment.comment,
                 "created_at": new_comment.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                # profilepic is a URL string now
-                "profile_pic": user_profile.profilepic if user_profile.profilepic else "/media/profile_pics/blank-profile-picture.png"
-                
+                "profile_pic": profile_pic_url
             }
         }
         return JsonResponse(comment_data)

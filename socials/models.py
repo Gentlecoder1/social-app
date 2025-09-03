@@ -56,15 +56,20 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         """Automatically determine media type based on file extension"""
         if self.media:
-            ext = os.path.splitext(self.media.name)[1].lower()
+            # Try to get file extension robustly
+            ext = None
+            if hasattr(self.media, 'name') and self.media.name:
+                ext = os.path.splitext(self.media.name)[1].lower()
+            elif hasattr(self.media, 'url') and self.media.url:
+                ext = os.path.splitext(self.media.url)[1].lower()
+            elif hasattr(self.media, 'public_id') and self.media.public_id:
+                ext = os.path.splitext(str(self.media.public_id))[1].lower()
             image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
             video_extensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv']
-            
             if ext in image_extensions:
                 self.media_type = 'image'
             elif ext in video_extensions:
                 self.media_type = 'video'
-        
         super().save(*args, **kwargs)
 
     def __str__(self):
