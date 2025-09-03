@@ -21,4 +21,7 @@ urlpatterns = [
     path("notifications/delete/<int:notification_id>/", views.delete_notification, name="delete_notification"),
     path("layout", views.layout, name="layout"),
     path("saved/", views.saved, name="saved"),
+    path("verify-otp/", views.verify_otp, name="verify_otp"),
+    # path("auto-login/", views.auto_login, name="auto_login"),
+    # path("resend-otp/", views.resend_otp, name="resend_otp"),
 ]

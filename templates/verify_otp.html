@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP - Social Book</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="flex items-center justify-center min-h-screen">
+        <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md flex flex-col items-center">
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Verify Your Email</h2>
+            <p class="mb-4 text-gray-700 text-center">We've sent a 4-digit code to <span class="font-semibold">{{ email }}</span>.</p>
+            
+            <form id="otpForm" class="w-full flex flex-col items-center" method="post">
+                {% csrf_token %}
+                <input type="text" id="otpInput" name="otp" maxlength="6" class="border rounded p-2 mb-4 w-full text-center" placeholder="Enter OTP" required />
+                {% comment %} verify button {% endcomment %}
+                <button type="submit" id="verifyOTPBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300">Verify OTP</button>
+                <div id="otpError" class="text-red-600 mt-2"></div>
+            </form>
+            <button id="resendOTPBtn" class="mt-4 text-blue-600 hover:underline">Resend OTP</button>
+            <div id="verifiedMsg" class="hidden mt-6 text-green-600 font-bold text-lg flex flex-col items-center">
+                <span>✔ Email Verified!</span>
+                <a href="/" id="continueBtn" class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg">Continue to Home</a>
+            </div>
+            
+        </div>
+    </div>
+
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpForm = document.getElementById('otpForm');
+            const otpInput = document.getElementById('otpInput');
+            const otpError = document.getElementById('otpError');
+            const verifiedMsg = document.getElementById('verifiedMsg');
+            const resendOTPBtn = document.getElementById('resendOTPBtn');
+            const verifyOTPBtn = document.getElementById('verifyOTPBtn');
+            let email = "{{ email }}";
+
+            otpForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                otpError.textContent = '';
+                verifyOTPBtn.disabled = true;
+                fetch('/verify-otp/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: `otp=${otpInput.value}&email=${email}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    verifyOTPBtn.disabled = false;
+                    if (data.success) {
+                        verifiedMsg.classList.remove('hidden');
+                        otpForm.classList.add('hidden');
+                    } else {
+                        otpError.textContent = data.error || 'Invalid or expired code.';
+                    }
+                })
+                .catch(() => {
+                    verifyOTPBtn.disabled = false;
+                    otpError.textContent = 'Network error. Please try again.';
+                });
+            });
+
+            resendOTPBtn.addEventListener('click', function() {
+                resendOTPBtn.disabled = true;
+                fetch('/resend-otp/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: `email=${email}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    resendOTPBtn.disabled = false;
+                    if (data.success) {
+                        otpError.textContent = 'OTP resent! Check your email.';
+                    } else {
+                        otpError.textContent = data.error || 'Could not resend OTP.';
+                    }
+                })
+                .catch(() => {
+                    resendOTPBtn.disabled = false;
+                    otpError.textContent = 'Network error. Please try again.';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

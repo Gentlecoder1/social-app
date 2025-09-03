@@ -8,8 +8,9 @@ from .models import Profile, Post, LikePost, Comment, Follow, Notification
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 import random
+from django.core.mail import send_mail
 from .utils import logger
-
+from django.views.decorators.csrf import csrf_exempt
 
 def get_shared_context(user):
     """Get shared context data for suggestions and notifications."""
@@ -111,39 +112,71 @@ def create_unfollow_notification(following_user, follower_user):
         notification_type='unfollow'
     )
 
-def signup(request): 
+
+def signup(request):
     signup_errors = []
-    signup_success = []
     
     if request.method == "POST":
         username = request.POST.get("username")
         email = request.POST.get("email")
         password = request.POST.get("password")
         password2 = request.POST.get("password2")
-        
+
         if User.objects.filter(username=username).exists():
             signup_errors.append("Username already exists.")
            
         if User.objects.filter(email=email).exists():
             signup_errors.append("Email already exists.")
-            
         if password != password2:
             signup_errors.append("Passwords do not match.")
+        if signup_errors:
             return render(request, "signup.html", {"signup_errors": signup_errors})
-        
-        # All validations passed
-        if password == password2:
-            user = User.objects.create_user(username=username, email=email, password=password)
-            user.save()
 
-            # Log the user in, but do NOT create a profile automatically
-            user_login = authenticate(username=username, password=password)
-            login(request, user_login)
+        # All validations passed: create user as inactive
+        user = User.objects.create_user(username=username, email=email, password=password, is_active=False)
+        user.save()
 
-            signup_success.append(f"Account created successfully! Welcome {username}!")
-        return render(request, "signin.html", {"signup_success": signup_success})
-            
+        # Generate OTP and send to email
+        otp = str(random.randint(100000, 999999))
+        request.session['otp'] = otp
+        request.session['otp_email'] = email
+        send_mail(
+            "Your OTP Code",
+            f"Your OTP code is: {otp}",
+            "noreply@yourdomain.com",
+            [email],
+        )
+        # Redirect to verify_otp page
+        return render(request, "verify_otp.html", {"email": email})
     return render(request, "signup.html")
+
+@csrf_exempt
+def verify_otp(request):
+    if request.method == "POST":
+        otp_input = request.POST.get("otp")
+        email = request.POST.get("email")
+        session_otp = request.session.get('otp')
+        session_email = request.session.get('otp_email')
+        if otp_input == session_otp and email == session_email:
+            try:
+                user = User.objects.get(email=email)
+                user.is_active = True
+                user.save()
+                # Log the user in after successful verification
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                # Clean up session
+                request.session.pop('otp', None)
+                request.session.pop('otp_email', None)
+                return JsonResponse({"success": True})
+            except User.DoesNotExist:
+                return JsonResponse({"success": False, "error": "User not found."})
+        else:
+            return JsonResponse({"success": False, "error": "Invalid OTP or email."})
+    # If GET, render the OTP form page
+    if request.method == "GET":
+        email = request.session.get('otp_email')
+        return render(request, "verify_otp.html", {"email": email})
+    return JsonResponse({"success": False, "error": "Invalid request method."})
 
 def signin(request):
     signin_errors = []
@@ -293,46 +326,26 @@ def delete(request, post_id):
 def profile(request, pk):
     user_object = get_object_or_404(User, username=pk)
     user_profile, created = Profile.objects.get_or_create(user=user_object)
-    
-    # Get user's posts with optimized queries
-    posts = Post.objects.filter(user=user_object).select_related('user').prefetch_related(
-        'comments__username__profile'  # Prefetch comments and their authors
-    ).order_by('-created_at')[:20]  # Limit posts for better performance
-    
-    # Add post_comments attribute for template compatibility
-    for post in posts:
-        post.post_comments = post.comments.all()  # Use prefetched data
-    
-    # Check if current user is following this user
-    is_following = Follow.objects.filter(follower=request.user, following=user_object).exists()
-    button_text = "Unfollow" if is_following else "Follow"
-
-    # Get counts efficiently
-    post_length = posts.count()
-    user_followers = Follow.objects.filter(following=user_object).count()
-    user_following = Follow.objects.filter(follower=user_object).count()
-    
-    # Get liked posts for current user
-    liked_post_ids = [like.post_id.id for like in LikePost.objects.filter(username=request.user)]
-
-    context = {
-        "user_profile": user_profile,
-        "posts": posts,
-        "user_object": user_object,
-        "post_length": post_length,
-        "user_followers": user_followers,
-        "user_following": user_following,
-        "button_text": button_text,
-        "liked_post_ids": liked_post_ids,
-    }
-
-    # Get shared context data (suggestions and notifications)
+    posts = Post.objects.filter(user=user_object).order_by('-created_at')
+    post_count = posts.count()
+    follower_count = Follow.objects.filter(following=user_object).count()
+    following_count = Follow.objects.filter(follower=user_object).count()
+    is_following = False
+    if request.user.is_authenticated:
+        is_following = Follow.objects.filter(follower=request.user, following=user_object).exists()
+    # Get shared context data
     shared_context = get_shared_context(request.user)
-
-    # Add shared context data
+    context = {
+        'user_object': user_object,
+        'user_profile': user_profile,
+        'posts': posts,
+        'post_count': post_count,
+        'follower_count': follower_count,
+        'following_count': following_count,
+        'is_following': is_following,
+    }
     context.update(shared_context)
-
-    return render(request, "profile.html", context)
+    return render(request, 'profile.html', context)
 
 @login_required(login_url='signin')
 def saved(request):

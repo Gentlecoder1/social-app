@@ -1,4 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // OTP modal for verification
+  const OTPModal = document.getElementById('OTPModal');
+  const otpInput = document.getElementById('otpInput');
+  const verifyOTP = document.getElementById('verifyOTP');
+  const cancelOTP = document.getElementById('cancelOTP');
+
   // Long text modal for upload
   const openLongTextModal = document.getElementById('openLongTextModal');
   const longTextModal = document.getElementById('longTextModal');
