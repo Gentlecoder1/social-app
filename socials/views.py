@@ -164,9 +164,10 @@ def verify_otp(request):
                 user.save()
                 # Log the user in after successful verification
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                # Clean up session
+                # Clean up session (only clear OTP, keep email)
                 request.session.pop('otp', None)
-                request.session.pop('otp_email', None)
+                request.session['otp_verified'] = True
+                # request.session.pop('otp_email', None)  # Do not clear email
                 return JsonResponse({"success": True})
             except User.DoesNotExist:
                 return JsonResponse({"success": False, "error": "User not found."})
@@ -175,7 +176,13 @@ def verify_otp(request):
     # If GET, render the OTP form page
     if request.method == "GET":
         email = request.session.get('otp_email')
-        return render(request, "verify_otp.html", {"email": email})
+        otp_verified = request.session.get('otp_verified')
+        # if not email:
+        #     # If session is cleared, show a message instead of redirecting
+        #     return render(request, "verify_otp.html", {"email": None, "session_expired": True})
+        if otp_verified:
+            return render(request, "verify_otp.html", {"email": email, "verified": True, "session_expired": False})
+        return render(request, "verify_otp.html", {"email": email, "session_expired": False})
     return JsonResponse({"success": False, "error": "Invalid request method."})
 
 def signin(request):
