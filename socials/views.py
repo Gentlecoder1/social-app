@@ -136,16 +136,21 @@ def signup(request):
         user = User.objects.create_user(username=username, email=email, password=password, is_active=False)
         user.save()
 
-        # Generate OTP and send to email
+        # Generate OTP and send to email using HTML template
         otp = str(random.randint(100000, 999999))
         request.session['otp'] = otp
         request.session['otp_email'] = email
-        send_mail(
-            "Your OTP Code",
-            f"Your OTP code is: {otp}",
-            "noreply@yourdomain.com",
-            [email],
+        from django.template.loader import render_to_string
+        from django.core.mail import EmailMessage
+        html_message = render_to_string('emails/otp_email.html', {'otp': otp})
+        email_message = EmailMessage(
+            subject="Your OTP Code",
+            body=html_message,
+            from_email=None,  # Uses DEFAULT_FROM_EMAIL from settings
+            to=[email]
         )
+        email_message.content_subtype = "html"  # Send as HTML
+        email_message.send()
         # Redirect to verify_otp page
         return render(request, "verify_otp.html", {"email": email})
     return render(request, "signup.html")
