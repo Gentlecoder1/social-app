@@ -16,12 +16,17 @@
             
             <form id="otpForm" class="w-full flex flex-col items-center" method="post">
                 {% csrf_token %}
-                <input type="text" id="otpInput" name="otp" maxlength="6" class="border rounded p-2 mb-4 w-full text-center" placeholder="Enter OTP" required />
-                {% comment %} verify button {% endcomment %}
+                <div class="flex justify-between gap-2 mb-4 w-full">
+                    {% for i in "123456" %}
+                        <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric" class="otp-digit border text-[16px] rounded w-10 h-10 text-center focus:ring-2 focus:ring-blue-500" id="otp{{ forloop.counter }}" required />
+                    {% endfor %}
+                </div>
                 <button type="submit" id="verifyOTPBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300">Verify OTP</button>
                 <div id="otpError" class="text-red-600 mt-2"></div>
             </form>
+            <!-- Resend OTP button -->
             <button id="resendOTPBtn" class="mt-4 text-blue-600 hover:underline">Resend OTP</button>
+            <!-- Hidden message for verified email -->
             <div id="verifiedMsg" class="hidden mt-6 text-green-600 font-bold text-lg flex flex-col items-center">
                 <span>✔ Email Verified!</span>
                 <a href="/" id="continueBtn" class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg">Continue to Home</a>
@@ -34,24 +39,39 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const otpForm = document.getElementById('otpForm');
-            const otpInput = document.getElementById('otpInput');
+            const otpInputs = document.querySelectorAll('.otp-digit');
             const otpError = document.getElementById('otpError');
             const verifiedMsg = document.getElementById('verifiedMsg');
             const resendOTPBtn = document.getElementById('resendOTPBtn');
             const verifyOTPBtn = document.getElementById('verifyOTPBtn');
             let email = "{{ email }}";
 
+            // Auto-focus and move to next input
+            otpInputs.forEach((input, idx) => {
+                input.addEventListener('input', function(e) {
+                    if (input.value.length === 1 && idx < otpInputs.length - 1) {
+                        otpInputs[idx + 1].focus();
+                    }
+                });
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && input.value === '' && idx > 0) {
+                        otpInputs[idx - 1].focus();
+                    }
+                });
+            });
+
             otpForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 otpError.textContent = '';
                 verifyOTPBtn.disabled = true;
+                let otpValue = Array.from(otpInputs).map(i => i.value).join('');
                 fetch('/verify-otp/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                     },
-                    body: `otp=${otpInput.value}&email=${email}`
+                    body: `otp=${otpValue}&email=${email}`
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -59,6 +79,7 @@
                     if (data.success) {
                         verifiedMsg.classList.remove('hidden');
                         otpForm.classList.add('hidden');
+                        resendOTPBtn.classList.add('hidden');
                     } else {
                         otpError.textContent = data.error || 'Invalid or expired code.';
                     }
@@ -69,7 +90,7 @@
                 });
             });
 
-            resendOTPBtn.addEventListener('click', function() {
+            /* resendOTPBtn.addEventListener('click', function() {
                 resendOTPBtn.disabled = true;
                 fetch('/resend-otp/', {
                     method: 'POST',
@@ -92,7 +113,7 @@
                     resendOTPBtn.disabled = false;
                     otpError.textContent = 'Network error. Please try again.';
                 });
-            });
+            }); */
         });
     </script>
 </body>
