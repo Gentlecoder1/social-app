@@ -25,7 +25,7 @@
                         <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric" class="otp-digit border text-[16px] rounded w-10 h-10 text-center focus:ring-2 focus:ring-blue-500" id="otp{{ forloop.counter }}" required />
                     {% endfor %}
                 </div>
-                <button type="submit" id="verifyOTPBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300"><i class="fas fa-check mr-2"></i>Verify OTP</button>
+                <button type="submit" id="verifyOTPBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300">Verify OTP</button>
                 <div id="otpError" class="text-red-600 mt-2"></div>
             </form>
             <!-- Resend OTP button -->
@@ -34,6 +34,8 @@
             <div id="verifiedMsg" class="hidden mt-6 text-green-600 font-bold text-lg flex flex-col items-center">
                 <span>✔ Email Verified!</span>
                 <a href="/" id="continueBtn" class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg">Continue to Home</a>
+
+                <a href="{% url 'settings' %}" id="continueBtn" class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-cog mr-2"></i>Profile Settings</a>
             </div>
             
         </div>
@@ -67,6 +69,8 @@
             otpForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 otpError.textContent = '';
+                verifyOTPBtn.innerHTML =
+                '<i class="fas fa-spinner fa-spin mr-2"></i>Verifying...';
                 verifyOTPBtn.disabled = true;
                 let otpValue = Array.from(otpInputs).map(i => i.value).join('');
                 fetch('/verify-otp/', {
@@ -85,24 +89,15 @@
                         otpForm.classList.add('hidden');
                         resendOTPBtn.classList.add('hidden');
                     } else {
+                        verifyOTPBtn.innerHTML = 'Verify OTP';
                         otpError.textContent = data.error || 'Invalid or expired code.';
                     }
                 })
                 .catch(() => {
+                    verifyOTPBtn.innerHTML = 'Verify OTP';
                     verifyOTPBtn.disabled = false;
                     otpError.textContent = 'Network error. Please try again.';
                 });
-            });
-
-
-            // otp verify loading
-            const form = document.querySelector("form");
-            const submitBtn = document.querySelector('button[type="submit"]');
-
-            form.addEventListener("submit", function (e) {
-                submitBtn.innerHTML =
-                '<i class="fas fa-spinner fa-spin mr-2"></i>Verifying...';
-                submitBtn.disabled = true;
             });
 
             /* resendOTPBtn.addEventListener('click', function() {

@@ -14,7 +14,7 @@
   </head>
   <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
     <!-- Main Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-30">
+    <header class="bg-white shadow-sm sticky border-b-2 border-blue-600 top-0 z-30">
       <div
         class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between"
       >
@@ -236,5 +236,19 @@
         </div>
       </div>
     </div>
+
+    <script>
+      // Form validation and smooth submission
+      const form = document.querySelector("form");
+      const submitBtn = document.querySelector('button[type="submit"]');
+
+      form.addEventListener("submit", function (e) {
+        submitBtn.innerHTML =
+          '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
+        submitBtn.disabled = true;
+      });
+    </script>
   </body>
 </html>
+
+
