@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify OTP - Social Book</title>
     <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
@@ -21,11 +25,11 @@
                         <input type="text" maxlength="1" pattern="[0-9]*" inputmode="numeric" class="otp-digit border text-[16px] rounded w-10 h-10 text-center focus:ring-2 focus:ring-blue-500" id="otp{{ forloop.counter }}" required />
                     {% endfor %}
                 </div>
-                <button type="submit" id="verifyOTPBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300">Verify OTP</button>
+                <button type="submit" id="verifyOTPBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300"><i class="fas fa-check mr-2"></i>Verify OTP</button>
                 <div id="otpError" class="text-red-600 mt-2"></div>
             </form>
             <!-- Resend OTP button -->
-            <button id="resendOTPBtn" class="mt-4 text-blue-600 hover:underline">Resend OTP</button>
+            {% comment %} <button id="resendOTPBtn" class="mt-4 text-blue-600 hover:underline">Resend OTP</button> {% endcomment %}
             <!-- Hidden message for verified email -->
             <div id="verifiedMsg" class="hidden mt-6 text-green-600 font-bold text-lg flex flex-col items-center">
                 <span>✔ Email Verified!</span>
@@ -88,6 +92,17 @@
                     verifyOTPBtn.disabled = false;
                     otpError.textContent = 'Network error. Please try again.';
                 });
+            });
+
+
+            // otp verify loading
+            const form = document.querySelector("form");
+            const submitBtn = document.querySelector('button[type="submit"]');
+
+            form.addEventListener("submit", function (e) {
+                submitBtn.innerHTML =
+                '<i class="fas fa-spinner fa-spin mr-2"></i>Verifying...';
+                submitBtn.disabled = true;
             });
 
             /* resendOTPBtn.addEventListener('click', function() {
