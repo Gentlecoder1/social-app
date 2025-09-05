@@ -1,11 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 import uuid
 import os
 from cloudinary.models import CloudinaryField
 from datetime import datetime
+
+class OTP(models.Model):
+    email = models.EmailField(unique=True)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def __str__(self):
+        return f"OTP for {self.email}: {self.code}"
 
 # Profile model linked to Django User
 class Profile(models.Model):

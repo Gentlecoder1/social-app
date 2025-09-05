@@ -1,4 +1,3 @@
-from django.db import models
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib import messages
@@ -123,41 +122,53 @@ def signup(request):
         password = request.POST.get("password")
         password2 = request.POST.get("password2")
 
-        # Remove inactive user with same username/email if exists
-        inactive_users = User.objects.filter(
-            (models.Q(username=username) | models.Q(email=email)),
-            is_active=False
-        )
-        if inactive_users.exists():
-            inactive_users.delete()
-            return redirect('signup')
+        # Check for existing user
+        try:
+            user = User.objects.get(email=email)
+            if user.is_active:
+                signup_errors.append("Email already exists.")
+            elif user.username != username:
+                signup_errors.append("Email is already registered with a different username.")
+        except User.DoesNotExist:
+            user = None
 
-        # Validation checks (after cleanup)
-        if User.objects.filter(username=username).exists():
+        if User.objects.filter(username=username, is_active=True).exists():
             signup_errors.append("Username already exists.")
-        if User.objects.filter(email=email).exists():
-            signup_errors.append("Email already exists.")
         if password != password2:
             signup_errors.append("Passwords do not match.")
 
         if signup_errors:
             return render(request, "signup.html", {"signup_errors": signup_errors})
 
-        # All validations passed: create user as inactive
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            is_active=False
-        )
-        user.save()
+        # If user exists and is inactive, reuse it; else create new inactive user
+        if not user:
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                is_active=False
+            )
+            user.save()
+        else:
+            # If user exists and is inactive, update password if needed
+            if not user.check_password(password):
+                user.set_password(password)
+                user.save()
 
-        # Generate OTP and send to email using HTML template
-        otp = str(random.randint(100000, 999999))
-        request.session['otp'] = otp
+        # Generate OTP and store in DB
+        from socials.models import OTP
+        from django.utils import timezone
+        from datetime import timedelta
+        otp_code = str(random.randint(100000, 999999))
+        expires_at = timezone.now() + timedelta(minutes=10)
+        OTP.objects.update_or_create(
+            email=email,
+            defaults={"code": otp_code, "expires_at": expires_at}
+        )
         request.session['otp_email'] = email
 
-        html_message = render_to_string('emails/otp_email.html', {'otp': otp})
+        # Send OTP email
+        html_message = render_to_string('emails/otp_email.html', {'otp': otp_code})
         email_message = EmailMessage(
             subject="Your OTP Code",
             body=html_message,
@@ -177,22 +188,27 @@ def verify_otp(request):
     if request.method == "POST":
         otp_input = request.POST.get("otp")
         email = request.POST.get("email")
-        session_otp = request.session.get('otp')
-        session_email = request.session.get('otp_email')
-        if otp_input == session_otp and email == session_email:
-            try:
-                user = User.objects.get(email=email)
-                user.is_active = True
-                user.save()
-                # Log the user in after successful verification
-                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                # Clean up session (only clear OTP, keep email)
-                request.session.pop('otp', None)
-                request.session['otp_verified'] = True
-                # request.session.pop('otp_email', None)  # Do not clear email
-                return JsonResponse({"success": True})
-            except User.DoesNotExist:
-                return JsonResponse({"success": False, "error": "User not found."})
+        if not email:
+            return JsonResponse({"success": False, "error": "Email is required."})
+        try:
+            user = User.objects.get(email=email, is_active=False)
+        except User.DoesNotExist:
+            return JsonResponse({"success": False, "error": "User not found or already verified."})
+
+        from socials.models import OTP
+        try:
+            otp_obj = OTP.objects.get(email=email)
+        except OTP.DoesNotExist:
+            return JsonResponse({"success": False, "error": "OTP not found. Please request a new one."})
+        if otp_obj.is_expired():
+            return JsonResponse({"success": False, "error": "OTP expired. Please request a new one."})
+        if otp_input == otp_obj.code:
+            user.is_active = True
+            user.save()
+            otp_obj.delete()  # Remove OTP after successful verification
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            request.session['otp_verified'] = True
+            return JsonResponse({"success": True})
         else:
             return JsonResponse({"success": False, "error": "Invalid OTP or email."})
 
