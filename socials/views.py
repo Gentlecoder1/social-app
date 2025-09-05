@@ -1,14 +1,12 @@
-from itertools import chain
+from django.db import models
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib.auth.models import User
 from .models import Profile, Post, LikePost, Comment, Follow, Notification
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 import random
-from django.core.mail import send_mail
 from .utils import logger
 from django.views.decorators.csrf import csrf_exempt
 # Send OTP
@@ -125,7 +123,16 @@ def signup(request):
         password = request.POST.get("password")
         password2 = request.POST.get("password2")
 
-        # Validation checks
+        # Remove inactive user with same username/email if exists
+        inactive_users = User.objects.filter(
+            (models.Q(username=username) | models.Q(email=email)),
+            is_active=False
+        )
+        if inactive_users.exists():
+            inactive_users.delete()
+            return redirect('signup')
+
+        # Validation checks (after cleanup)
         if User.objects.filter(username=username).exists():
             signup_errors.append("Username already exists.")
         if User.objects.filter(email=email).exists():
@@ -149,9 +156,6 @@ def signup(request):
         otp = str(random.randint(100000, 999999))
         request.session['otp'] = otp
         request.session['otp_email'] = email
-
-        from django.template.loader import render_to_string
-        from django.core.mail import EmailMessage
 
         html_message = render_to_string('emails/otp_email.html', {'otp': otp})
         email_message = EmailMessage(
@@ -191,6 +195,7 @@ def verify_otp(request):
                 return JsonResponse({"success": False, "error": "User not found."})
         else:
             return JsonResponse({"success": False, "error": "Invalid OTP or email."})
+
     # If GET, render the OTP form page
     if request.method == "GET":
         email = request.session.get('otp_email')
