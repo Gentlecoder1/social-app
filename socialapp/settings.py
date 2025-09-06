@@ -112,21 +112,22 @@ DEFAULT_FROM_EMAIL = "israeloloruntoba3@gmail.com"
 
 # Using Supabase PostgreSQL database
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('SUPABASE_DB_NAME'),
-        'USER': os.getenv('SUPABASE_DB_USER'),
-        'PASSWORD': os.getenv('SUPABASE_DB_PASSWORD'),
-        'HOST': os.getenv('SUPABASE_DB_HOST'),
-        'PORT': os.getenv('SUPABASE_DB_PORT', '5432'),
-        'OPTIONS': {
-            'connect_timeout': 10,
-            'options': '-c default_transaction_isolation=read_committed'
-        },
-        'CONN_MAX_AGE': 0,
-        'ATOMIC_REQUESTS': True,
-    }
+    'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
 }
+
+#     'ENGINE': 'django.db.backends.postgresql',
+#     'NAME': os.getenv('SUPABASE_DB_NAME'),
+#     'USER': os.getenv('SUPABASE_DB_USER'),
+#     'PASSWORD': os.getenv('SUPABASE_DB_PASSWORD'),
+#     'HOST': os.getenv('SUPABASE_DB_HOST'),
+#     'PORT': os.getenv('SUPABASE_DB_PORT', '5432'),
+#     'OPTIONS': {
+#         'connect_timeout': 10,
+#         'options': '-c default_transaction_isolation=read_committed'
+#     },
+#     'CONN_MAX_AGE': 0,
+#     'ATOMIC_REQUESTS': True,
+# }
 
 # SQLite configuration (for backup purposes)
 # DATABASES = {
