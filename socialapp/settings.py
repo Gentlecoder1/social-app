@@ -3,8 +3,6 @@ load_dotenv()
 from pathlib import Path
 import os
 import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -17,9 +15,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-+%o9!i195+gxmy#+7hagb$wo#*=zx@^$#%rn^3y%a82j3pl!^2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["socialbook.onrender.com"]
 
 
 # Application definition
@@ -36,9 +34,6 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'allauth',
     'allauth.account',
-    # 'allauth.socialaccount',
-    # 'allauth.socialaccount.providers.google',
-    # 'allauth.socialaccount.providers.github',
 ]
 SITE_ID = 1
 
@@ -188,10 +183,6 @@ if DEBUG:
     # Enable template auto-reload
     TEMPLATES[0]['OPTIONS']['debug'] = True
     
-    # Watch for changes in additional file types
-    import sys
-    import os
-    
     # Add static files to watchdog if in development
     STATICFILES_FINDERS = [
         'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -222,8 +213,9 @@ if DEBUG:
 MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+SESSION_COOKIE_SECURE = True
 # CSRF Configuration
-CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_SECURE = True  # Set to True in production with HTTPS
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_SAMESITE = 'Lax'
