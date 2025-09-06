@@ -1,0 +1,202 @@
+/* Optimized CSS with combined selectors and reduced redundancy */
+body {
+  font-family: Segoe UI, system-ui, sans-serif;
+  background-color: #f0f2f5;
+}
+
+/* Combined hover effects */
+.sidebar-item,
+.post-interaction {
+  padding: 8px;
+  margin: 2px 0;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-item:hover,
+.post-interaction:hover {
+  background-color: #e4e6e9;
+}
+
+.post-interaction {
+  color: #65676b;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 8px 0;
+}
+
+/* Shared input styles */
+.comment-input,
+.search-input {
+  background-color: #f0f2f5;
+  border-radius: 18px;
+  font-size: 15px;
+  border: none;
+  outline: none;
+}
+
+/* Sidebar animations - combined */
+#rightSidebar,
+#sidebar {
+  transition: transform 0.3s ease;
+}
+
+#rightSidebar {
+  transform: translateX(100%);
+}
+
+#rightSidebar.show {
+  transform: translateX(0);
+}
+
+/* Overlay styles - combined */
+#rightSidebarOverlay,
+#sidebarOverlay {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s;
+}
+
+#rightSidebarOverlay.show,
+#sidebarOverlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.search-input {
+  background-color: #f0f2f5;
+  border-radius: 50px;
+  padding: 8px 16px;
+  width: 240px;
+}
+.search-input:focus {
+  outline: none;
+  background-color: white;
+  box-shadow: 0 0 0 2px #e7f3ff;
+}
+#sidebar {
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+#sidebar.show {
+  transform: translateX(0);
+}
+#sidebarOverlay {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s;
+}
+#sidebarOverlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+@media (min-width: 768px) {
+  #sidebar {
+    transform: translateX(0);
+  }
+  #rightSidebar {
+    width: 390px;
+  }
+}
+@media (max-width: 767px) {
+  #rightSidebar {
+    width: 60%;
+  }
+}
+@media (max-width: 500px) {
+  #rightSidebar {
+    width: 100%;
+  }
+}
+
+/* for the profile page */
+.profile-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+}
+
+.profile-avatar {
+  position: absolute;
+  bottom: -48px;
+  left: 24px;
+}
+
+.profile-avatar img {
+  border: 4px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* followers and following */
+.stat-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Post interaction styles for the engagement buttons */
+.post-interaction {
+  color: #65676b;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.post-interaction:hover {
+  background-color: #f0f2f5;
+}
+
+.comment-input {
+  background-color: #f0f2f5;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.comments-section {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.comments-section:not(.hidden) {
+  max-height: 300px;
+  opacity: 1;
+}
+
+.comments-scroll-container {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Text truncation for long posts */
+.post-caption {
+  word-wrap: break-word;
+  line-height: 1.5;
+}
+
+.post-caption.truncated {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.see-more-btn, .see-less-btn {
+  color: #1877f2;
+  font-weight: 500;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 5px;
+  text-decoration: none;
+}
+
+.see-more-btn:hover, .see-less-btn:hover {
+  text-decoration: underline;
+}
