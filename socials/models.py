@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 import uuid
 import os
 from cloudinary.models import CloudinaryField
-from datetime import timezone
+from django.utils import timezone
 
 class OTP(models.Model):
     email = models.EmailField(unique=True)
