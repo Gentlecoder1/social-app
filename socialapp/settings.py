@@ -106,7 +106,7 @@ EMAIL_HOST = "smtp-relay.brevo.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "9638ad001@smtp-brevo.com"
-EMAIL_HOST_PASSWORD = "TYPGIvmt9caVdF5R" 
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = "israeloloruntoba3@gmail.com"
 
 # Database
