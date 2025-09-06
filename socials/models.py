@@ -4,13 +4,16 @@ from django.core.exceptions import ValidationError
 import uuid
 import os
 from cloudinary.models import CloudinaryField
-from datetime import datetime
+from datetime import timezone
 
 class OTP(models.Model):
     email = models.EmailField(unique=True)
     code = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
 
     def __str__(self):
         return f"OTP for {self.email}: {self.code}"
